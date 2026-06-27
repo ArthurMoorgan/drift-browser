@@ -1,8 +1,8 @@
 diff --git a/browser/app/profile/firefox.js b/browser/app/profile/firefox.js
-index 2b852e0225..f4e8b2fc66 100644
+index 2b852e0225..43f7124b04 100644
 --- a/browser/app/profile/firefox.js
 +++ b/browser/app/profile/firefox.js
-@@ -3623,3 +3623,24 @@ pref("browser.contentsharing.enabled", false);
+@@ -3623,3 +3623,53 @@ pref("browser.contentsharing.enabled", false);
  
  // When enabled, Firefox ignores the distribution.ini file if global.id is MozillaOnline.
  pref("distribution.mozillaonline.ignore", true);
@@ -27,6 +27,59 @@ index 2b852e0225..f4e8b2fc66 100644
 +pref("browser.newtabpage.activity-stream.feeds.telemetry", false);
 +pref("browser.newtabpage.activity-stream.telemetry", false);
 +pref("browser.newtabpage.activity-stream.feeds.snippets", false);
++
++// Drift theme engine (read by drift-theme-chrome.js, applied to the chrome root).
++// theme: light | sepia | arctic | dark | midnight | slate | noir
++pref("drift.theme", "light");
++// accent: one of the 14 presets (terracotta sage ocean plum rose amber forest
++// indigo crimson teal cocoa graphite sky fuchsia)
++pref("drift.accent", "terracotta");
++// accentMode: preset | custom
++pref("drift.accentMode", "preset");
++// accentCustom: a hex colour used when accentMode == custom
++pref("drift.accentCustom", "");
++// glass: chrome translucency 20..95 (percent of surface over transparent)
++pref("drift.glass", 45);
++// blur: frost backdrop-filter radius in px (0 disables frost)
++pref("drift.blur", 20);
++// mode: normal | lite | minimal
++pref("drift.mode", "normal");
++// titlebarH: tab/title bar height override in px (0 = theme default)
++pref("drift.titlebarH", 0);
++// Layout flags
++pref("drift.vtabs", false);
++pref("drift.compact", false);
++pref("drift.centerUrl", false);
++pref("drift.acrylic", false);
++
++// Drift: enable the modern (revamped) sidebar on the release channel so vertical
++// tabs are available. The sidebar stays hidden by default (sidebar.visibility);
++// drift.vtabs mirrors into sidebar.verticalTabs via drift-theme-chrome.js.
++pref("sidebar.revamp", true);
+diff --git a/browser/base/content/browser.xhtml b/browser/base/content/browser.xhtml
+index d8ed09dca6..afc605085d 100644
+--- a/browser/base/content/browser.xhtml
++++ b/browser/base/content/browser.xhtml
+@@ -101,6 +101,7 @@
+   <title data-l10n-id="browser-main-window-default-title"></title>
+ 
+   <script src="chrome://browser/content/global-scripts.js"></script>
++  <script src="chrome://browser/content/drift-theme-chrome.js"></script>
+   <script src="chrome://browser/content/browser-main.js"></script>
+ </head>
+ <html:body xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+diff --git a/browser/base/jar.mn b/browser/base/jar.mn
+index dd0f873535..13c6f10f8c 100644
+--- a/browser/base/jar.mn
++++ b/browser/base/jar.mn
+@@ -52,6 +52,7 @@ browser.jar:
+         content/browser/browser-gestureSupport.js           (content/browser-gestureSupport.js)
+         content/browser/browser-init.js                     (content/browser-init.js)
+         content/browser/browser-main.js                     (content/browser-main.js)
++        content/browser/drift-theme-chrome.js               (content/drift-theme-chrome.js)
+         content/browser/browser-menubar.js                  (content/browser-menubar.js)
+         content/browser/browser-pageActions.js              (content/browser-pageActions.js)
+         content/browser/browser-pagestyle.js                (content/browser-pagestyle.js)
 diff --git a/browser/config/version.txt b/browser/config/version.txt
 index ccc3a1286f..afaf360d37 100644
 --- a/browser/config/version.txt

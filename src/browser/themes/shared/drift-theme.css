@@ -3,9 +3,12 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 /* ============================================================
-   Drift — minimal browser chrome theme
-   Warm cream palette · Inter font · frosted glass toolbar
-   Minimal mode: no bookmarks bar, no sidebar panel rail
+   Drift — browser chrome theme
+   7 runtime themes (Light Sepia Arctic Dark Midnight Slate Noir),
+   14 accent presets, live glass/blur, lite + minimal modes.
+   Theme/accent/glass/mode are applied to the chrome root as
+   drift-theme / drift-mode attributes + inline CSS vars by
+   drift-theme-chrome.js (driven by drift.* prefs).
    ============================================================ */
 
 @font-face {
@@ -23,8 +26,16 @@
   src: url("chrome://browser/skin/fonts/drift/fraunces.woff2") format("woff2");
 }
 
-/* === Drift cream design tokens — available to all chrome elements === */
+/* ============================================================
+   THEME PALETTES — 21-var contract per theme.
+   Default :root == Light. drift-theme-chrome.js sets
+   [drift-theme="..."] on the root for the others.
+   --drift-accent / -deep / -soft / -ring are set inline by JS
+   (per active accent preset), so they are intentionally omitted
+   from the palette blocks below except as fallbacks in :root.
+   ============================================================ */
 :root {
+  /* Light (default) */
   --drift-cream-1: #f8f2e4;
   --drift-cream-2: #efe4cf;
   --drift-surface: rgba(255, 252, 244, 0.62);
@@ -38,69 +49,186 @@
   --drift-text-1: #3a342a;
   --drift-text-2: #7c7361;
   --drift-text-3: #a89d85;
-  --drift-accent: #c2703d;
-  --drift-accent-deep: #a85a2c;
-  --drift-accent-soft: rgba(194, 112, 61, 0.12);
-  --drift-accent-ring: rgba(194, 112, 61, 0.38);
   --drift-shadow-sm: 0 1px 3px rgba(120, 95, 55, 0.10);
   --drift-shadow-md: 0 6px 22px rgba(120, 95, 55, 0.14);
+  --drift-shadow-lg: 0 24px 60px rgba(100, 78, 48, 0.26);
+  --drift-inset-light: inset 0 1px 0 rgba(255, 255, 255, 0.65);
+  --drift-close-hover: #e5573f;
+
+  /* Accent fallbacks (JS overrides these inline). */
+  --drift-accent: #c2703d;
+  --drift-accent-deep: #a85a2c;
+  --drift-accent-soft: rgba(194, 112, 61, 0.13);
+  --drift-accent-ring: rgba(194, 112, 61, 0.38);
+
+  /* Glass / blur fallbacks (JS overrides inline). */
+  --drift-glass: 0.45;
   --drift-blur: 20px;
+  --drift-titlebar-h: 34px;
   --drift-ease: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-/* === Override Firefox toolbar color vars ===
-   Declared unlayered so they beat @layer tokens-foundation / @layer tokens-browser-theme
-   from browser-colors.css which we import earlier in browser-shared.css. */
+/* Sepia — warm parchment (light) */
+:root[drift-theme="sepia"] {
+  --drift-cream-1: #efe2c6;
+  --drift-cream-2: #e3d2ac;
+  --drift-surface: rgba(250, 242, 224, 0.62);
+  --drift-surface-strong: rgba(250, 244, 228, 0.88);
+  --drift-surface-solid: #f4ead0;
+  --drift-hover: rgba(110, 84, 44, 0.09);
+  --drift-active: rgba(110, 84, 44, 0.15);
+  --drift-border: rgba(140, 110, 65, 0.20);
+  --drift-border-light: rgba(255, 250, 235, 0.70);
+  --drift-hairline: rgba(110, 84, 44, 0.12);
+  --drift-text-1: #4a3f2a;
+  --drift-text-2: #837049;
+  --drift-text-3: #a8966b;
+  --drift-shadow-sm: 0 1px 3px rgba(110, 84, 44, 0.12);
+  --drift-shadow-md: 0 6px 22px rgba(110, 84, 44, 0.16);
+  --drift-shadow-lg: 0 24px 60px rgba(90, 66, 34, 0.28);
+  --drift-inset-light: inset 0 1px 0 rgba(255, 250, 235, 0.60);
+  --drift-close-hover: #e5573f;
+}
+
+/* Arctic — cool blue-white (light) */
+:root[drift-theme="arctic"] {
+  --drift-cream-1: #eef3f8;
+  --drift-cream-2: #dde7f0;
+  --drift-surface: rgba(255, 255, 255, 0.66);
+  --drift-surface-strong: rgba(255, 255, 255, 0.90);
+  --drift-surface-solid: #f6f9fc;
+  --drift-hover: rgba(40, 70, 110, 0.07);
+  --drift-active: rgba(40, 70, 110, 0.12);
+  --drift-border: rgba(70, 100, 140, 0.16);
+  --drift-border-light: rgba(255, 255, 255, 0.80);
+  --drift-hairline: rgba(70, 100, 140, 0.10);
+  --drift-text-1: #25303d;
+  --drift-text-2: #5e6e7e;
+  --drift-text-3: #93a3b3;
+  --drift-shadow-sm: 0 1px 3px rgba(40, 70, 110, 0.10);
+  --drift-shadow-md: 0 6px 22px rgba(40, 70, 110, 0.14);
+  --drift-shadow-lg: 0 24px 60px rgba(30, 55, 90, 0.24);
+  --drift-inset-light: inset 0 1px 0 rgba(255, 255, 255, 0.70);
+  --drift-close-hover: #e5573f;
+}
+
+/* Dark — warm roast */
+:root[drift-theme="dark"] {
+  --drift-cream-1: #2b2620;
+  --drift-cream-2: #201c17;
+  --drift-surface: rgba(60, 52, 42, 0.55);
+  --drift-surface-strong: rgba(66, 57, 46, 0.86);
+  --drift-surface-solid: #2e2922;
+  --drift-hover: rgba(255, 244, 224, 0.07);
+  --drift-active: rgba(255, 244, 224, 0.13);
+  --drift-border: rgba(255, 236, 205, 0.12);
+  --drift-border-light: rgba(255, 240, 214, 0.16);
+  --drift-hairline: rgba(255, 236, 205, 0.09);
+  --drift-text-1: #f3ead9;
+  --drift-text-2: #bcae97;
+  --drift-text-3: #8c7f69;
+  --drift-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.40);
+  --drift-shadow-md: 0 6px 22px rgba(0, 0, 0, 0.45);
+  --drift-shadow-lg: 0 24px 60px rgba(0, 0, 0, 0.55);
+  --drift-inset-light: inset 0 1px 0 rgba(255, 245, 225, 0.08);
+  --drift-close-hover: #c14a36;
+}
+
+/* Midnight — deep navy (dark) */
+:root[drift-theme="midnight"] {
+  --drift-cream-1: #161d33;
+  --drift-cream-2: #0f1424;
+  --drift-surface: rgba(40, 50, 80, 0.50);
+  --drift-surface-strong: rgba(44, 55, 88, 0.86);
+  --drift-surface-solid: #1b2238;
+  --drift-hover: rgba(150, 180, 255, 0.08);
+  --drift-active: rgba(150, 180, 255, 0.14);
+  --drift-border: rgba(150, 180, 255, 0.14);
+  --drift-border-light: rgba(170, 195, 255, 0.16);
+  --drift-hairline: rgba(150, 180, 255, 0.10);
+  --drift-text-1: #e6ecfb;
+  --drift-text-2: #a9b4d4;
+  --drift-text-3: #7682a6;
+  --drift-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.45);
+  --drift-shadow-md: 0 6px 22px rgba(0, 0, 0, 0.50);
+  --drift-shadow-lg: 0 24px 60px rgba(0, 0, 0, 0.60);
+  --drift-inset-light: inset 0 1px 0 rgba(180, 200, 255, 0.07);
+  --drift-close-hover: #c14a36;
+}
+
+/* Slate — cool neutral grey (dark) */
+:root[drift-theme="slate"] {
+  --drift-cream-1: #222730;
+  --drift-cream-2: #191d24;
+  --drift-surface: rgba(60, 67, 78, 0.50);
+  --drift-surface-strong: rgba(64, 72, 84, 0.86);
+  --drift-surface-solid: #262b34;
+  --drift-hover: rgba(200, 210, 225, 0.07);
+  --drift-active: rgba(200, 210, 225, 0.13);
+  --drift-border: rgba(200, 210, 225, 0.12);
+  --drift-border-light: rgba(210, 220, 235, 0.14);
+  --drift-hairline: rgba(200, 210, 225, 0.09);
+  --drift-text-1: #e7ebf1;
+  --drift-text-2: #aab3c0;
+  --drift-text-3: #7c8693;
+  --drift-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.45);
+  --drift-shadow-md: 0 6px 22px rgba(0, 0, 0, 0.50);
+  --drift-shadow-lg: 0 24px 60px rgba(0, 0, 0, 0.60);
+  --drift-inset-light: inset 0 1px 0 rgba(220, 228, 240, 0.06);
+  --drift-close-hover: #c14a36;
+}
+
+/* Noir — true black (dark) */
+:root[drift-theme="noir"] {
+  --drift-cream-1: #000000;
+  --drift-cream-2: #000000;
+  --drift-surface: rgba(28, 28, 28, 0.60);
+  --drift-surface-strong: rgba(22, 22, 22, 0.90);
+  --drift-surface-solid: #0b0b0b;
+  --drift-hover: rgba(255, 255, 255, 0.06);
+  --drift-active: rgba(255, 255, 255, 0.12);
+  --drift-border: rgba(255, 255, 255, 0.10);
+  --drift-border-light: rgba(255, 255, 255, 0.14);
+  --drift-hairline: rgba(255, 255, 255, 0.07);
+  --drift-text-1: #f3f3f3;
+  --drift-text-2: #a6a6a6;
+  --drift-text-3: #6b6b6b;
+  --drift-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.60);
+  --drift-shadow-md: 0 6px 22px rgba(0, 0, 0, 0.70);
+  --drift-shadow-lg: 0 24px 60px rgba(0, 0, 0, 0.85);
+  --drift-inset-light: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  --drift-close-hover: #c14a36;
+}
+
+/* ============================================================
+   Map Firefox chrome color vars onto the Drift palette so the
+   whole UI follows the active theme. Declared unlayered so they
+   beat @layer tokens-foundation / tokens-browser-theme from
+   browser-colors.css (imported earlier in browser-shared.css).
+   ============================================================ */
 :root {
-  --toolbar-bgcolor: rgba(251, 246, 234, 0.82);
-  --toolbar-color: #3a342a;
-  --tab-selected-textcolor: #3a342a;
-  --tab-background-color-selected: rgba(255, 253, 247, 0.92);
+  --toolbar-bgcolor: color-mix(in srgb, var(--drift-surface-solid) calc(var(--drift-glass, 0.45) * 100%), transparent);
+  --toolbar-color: var(--drift-text-1);
+  --tab-selected-textcolor: var(--drift-text-1);
+  --tab-background-color-selected: var(--drift-surface-strong);
   --tabs-navbar-separator-color: transparent;
   --tabs-navbar-separator-style: none;
-  --chrome-content-separator-color: rgba(120, 95, 55, 0.10);
-  --urlbar-background-color: rgba(255, 252, 244, 0.62);
-  --urlbar-border-color: rgba(150, 125, 85, 0.16);
-  --input-color: #3a342a;
-  --input-bgcolor: rgba(255, 252, 244, 0.62);
-  --button-background-color: rgba(120, 95, 55, 0.08);
-  --button-background-color-hover: rgba(120, 95, 55, 0.14);
-  --button-text-color: #7c7361;
-  --color-accent-primary: #c2703d;
-  --color-accent-primary-hover: #a85a2c;
-  --link-color: #c2703d;
-  --link-color-hover: #a85a2c;
+  --chrome-content-separator-color: var(--drift-hairline);
+  --urlbar-background-color: var(--drift-surface);
+  --urlbar-border-color: var(--drift-border);
+  --input-color: var(--drift-text-1);
+  --input-bgcolor: var(--drift-surface);
+  --button-background-color: var(--drift-hover);
+  --button-background-color-hover: var(--drift-active);
+  --button-text-color: var(--drift-text-2);
+  --color-accent-primary: var(--drift-accent);
+  --color-accent-primary-hover: var(--drift-accent-deep);
+  --focus-outline-color: var(--drift-accent);
+  --link-color: var(--drift-accent);
+  --link-color-hover: var(--drift-accent-deep);
 }
 
-/* Dark theme — warm roast */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --drift-cream-1: #2b2620;
-    --drift-cream-2: #201c17;
-    --drift-surface: rgba(60, 52, 42, 0.55);
-    --drift-surface-strong: rgba(66, 57, 46, 0.86);
-    --drift-surface-solid: #2e2922;
-    --drift-hover: rgba(255, 244, 224, 0.07);
-    --drift-border: rgba(255, 236, 205, 0.12);
-    --drift-hairline: rgba(255, 236, 205, 0.09);
-    --drift-text-1: #f3ead9;
-    --drift-text-2: #bcae97;
-    --drift-text-3: #8c7f69;
-    --drift-accent: #e2914f;
-    --drift-accent-deep: #c2703d;
-    --drift-accent-soft: rgba(226, 145, 79, 0.16);
-    --drift-accent-ring: rgba(226, 145, 79, 0.45);
-
-    --toolbar-bgcolor: rgba(46, 41, 34, 0.88);
-    --toolbar-color: #f3ead9;
-    --tab-selected-textcolor: #f3ead9;
-    --tab-background-color-selected: rgba(66, 57, 46, 0.88);
-    --input-color: #f3ead9;
-    --input-bgcolor: rgba(60, 52, 42, 0.55);
-  }
-}
-
-/* === Chrome toolbox: cream warm-gradient base === */
+/* === Chrome toolbox: warm-gradient base === */
 #navigator-toolbox {
   background: linear-gradient(155deg, var(--drift-cream-1) 0%, var(--drift-cream-2) 100%) !important;
   color: var(--drift-text-1) !important;
@@ -117,22 +245,15 @@
 
 /* === Nav-bar (address bar row): glass pill === */
 #nav-bar {
-  background-color: rgba(251, 246, 234, 0.72) !important;
+  background-color: color-mix(in srgb, var(--drift-surface-solid) calc(var(--drift-glass, 0.45) * 100%), transparent) !important;
   backdrop-filter: blur(var(--drift-blur)) saturate(1.2) !important;
-  -webkit-backdrop-filter: blur(var(--drift-blur)) saturate(1.2) !important;
   color: var(--drift-text-1) !important;
   padding-block: 4px 8px !important;
   border-top: 1px solid var(--drift-hairline) !important;
   box-shadow: none !important;
 }
 
-@media (prefers-color-scheme: dark) {
-  #nav-bar {
-    background-color: rgba(46, 41, 34, 0.78) !important;
-  }
-}
-
-/* === Toolbar buttons: warm-toned === */
+/* === Toolbar buttons === */
 .toolbarbutton-1 {
   color: var(--drift-text-2) !important;
   border-radius: 6px !important;
@@ -152,7 +273,7 @@
   background-color: var(--drift-surface) !important;
   border: 1px solid var(--drift-border) !important;
   border-radius: 8px !important;
-  box-shadow: inset 0 1px 0 var(--drift-border-light) !important;
+  box-shadow: var(--drift-inset-light) !important;
   transition: border-color 0.18s, box-shadow 0.18s, background-color 0.18s !important;
 }
 #urlbar[focused] #urlbar-background {
@@ -168,8 +289,11 @@
 #urlbar-input::placeholder {
   color: var(--drift-text-3) !important;
 }
+:root[drift-center-url="true"] #urlbar-input {
+  text-align: center !important;
+}
 
-/* Identity icon (lock / globe) */
+/* Identity icon (lock / globe) and page actions */
 #identity-icon,
 #urlbar-go-button,
 .urlbar-page-action {
@@ -177,7 +301,7 @@
   fill: var(--drift-text-2) !important;
 }
 
-/* === Tabs: pill style, no bar-underline === */
+/* === Tabs: pill style === */
 .tab-background {
   border-radius: 8px 8px 0 0 !important;
   box-shadow: none !important;
@@ -203,23 +327,12 @@
   font-size: 12.5px !important;
 }
 
-/* Loading spinner: terracotta */
+/* Loading spinner uses the accent */
 .tab-throbber::before {
   border-top-color: var(--drift-accent) !important;
 }
 
-/* === Minimal mode: no bookmarks bar, no sidebar rail === */
-#PersonalToolbar {
-  display: none !important;
-}
-
-/* Keep sidebar-box hidden unless explicitly opened — don't render the sidebar panel
-   chrome as part of the default minimal layout. */
-#sidebar-box:not([checked]):not([sidebarcommand]) {
-  display: none !important;
-}
-
-/* === New tab button + "+" icon === */
+/* === New tab button === */
 #new-tab-button {
   color: var(--drift-text-2) !important;
 }
@@ -228,9 +341,19 @@
   color: var(--drift-text-1) !important;
 }
 
+/* === Tab close button === */
+.tab-close-button {
+  color: var(--drift-text-3) !important;
+  border-radius: 5px !important;
+}
+.tab-close-button:hover {
+  background-color: color-mix(in srgb, var(--drift-close-hover) 18%, transparent) !important;
+  color: var(--drift-close-hover) !important;
+}
+
 /* === Find bar === */
 #FindToolbar {
-  background-color: rgba(251, 246, 234, 0.92) !important;
+  background-color: var(--drift-surface-strong) !important;
   color: var(--drift-text-1) !important;
   border-top: 1px solid var(--drift-hairline) !important;
 }
@@ -243,7 +366,7 @@
 
 /* === Notification bar === */
 .notificationbox-stack {
-  background-color: rgba(251, 246, 234, 0.92) !important;
+  background-color: var(--drift-surface-strong) !important;
 }
 
 /* === Context menu and popups: glass panels === */
@@ -259,24 +382,121 @@ menupopup {
   color: var(--drift-accent) !important;
 }
 
-/* === Accent: apply terracotta to focus rings and highlights === */
+/* === Bookmarks bar: hidden in default + minimal layout === */
+#PersonalToolbar {
+  display: none !important;
+}
+
+/* Keep sidebar-box hidden unless explicitly opened. */
+#sidebar-box:not([checked]):not([sidebarcommand]) {
+  display: none !important;
+}
+
+/* ============================================================
+   LITE MODE — opaque, no frost, no animation. Glass/blur vars
+   are already forced opaque by drift-theme-chrome.js; here we
+   also drop backdrop-filter so nothing remains translucent.
+   ============================================================ */
+:root[drift-mode="lite"] #nav-bar,
+:root[drift-mode="lite"] #FindToolbar,
+:root[drift-mode="lite"] .notificationbox-stack,
+:root[drift-mode="lite"] panel.popup-internal-box,
+:root[drift-mode="lite"] menupopup {
+  backdrop-filter: none !important;
+}
+:root[drift-mode="lite"] *,
+:root[drift-mode="lite"] *::before,
+:root[drift-mode="lite"] *::after {
+  transition-duration: 0.001ms !important;
+  animation-duration: 0.001ms !important;
+}
+
+/* ============================================================
+   MINIMAL MODE — thinner chrome, slimmer controls.
+   ============================================================ */
+:root[drift-mode="minimal"] {
+  --drift-titlebar-h: 32px;
+}
+:root[drift-mode="minimal"] .toolbarbutton-1 {
+  border-radius: 8px !important;
+}
+:root[drift-mode="minimal"] #nav-bar {
+  padding-block: 3px 5px !important;
+}
+
+/* ============================================================
+   Native popups, menus, panels — Drift styling so the built-in
+   downloads / library / app-menu / context menus match.
+   ============================================================ */
+menupopup,
+panel {
+  --panel-background: var(--drift-surface-strong);
+  --panel-color: var(--drift-text-1);
+  --panel-border-color: var(--drift-border-light);
+  --arrowpanel-background: var(--drift-surface-strong);
+  --arrowpanel-color: var(--drift-text-1);
+  --arrowpanel-border-color: var(--drift-border-light);
+  --menu-background-color: var(--drift-surface-strong);
+  --menu-color: var(--drift-text-1);
+  --menuitem-hover-background-color: var(--drift-hover);
+  --panel-item-hover-bgcolor: var(--drift-hover);
+  --panel-item-active-bgcolor: var(--drift-active);
+}
+
+menuitem,
+menu {
+  color: var(--drift-text-1) !important;
+}
+menuitem[_moz-menuactive="true"],
+menu[_moz-menuactive="true"] {
+  background-color: var(--drift-hover) !important;
+  color: var(--drift-text-1) !important;
+}
+
+panelview,
+.panel-arrowcontent {
+  background-color: var(--drift-surface-strong) !important;
+  color: var(--drift-text-1) !important;
+}
+
+/* urlbar autocomplete results */
+.urlbarView {
+  background-color: var(--drift-surface-strong) !important;
+  color: var(--drift-text-1) !important;
+}
+.urlbarView-row:hover,
+.urlbarView-row[selected] {
+  background-color: var(--drift-hover) !important;
+}
+.urlbarView-title {
+  color: var(--drift-text-1) !important;
+}
+.urlbarView-url,
+.urlbarView-secondary {
+  color: var(--drift-text-2) !important;
+}
+
+/* ============================================================
+   Vertical tabs (native revamp sidebar) — Drift styling.
+   Only the light-DOM tab pills are targeted; sidebar surface
+   colours go through documented vars.
+   ============================================================ */
 :root {
-  --focus-outline-color: var(--drift-accent);
-  --color-accent-primary: var(--drift-accent);
-  --color-accent-primary-hover: var(--drift-accent-deep);
+  --sidebar-background-color: var(--drift-surface-solid);
+  --sidebar-text-color: var(--drift-text-1);
+}
+#tabbrowser-tabs[orient="vertical"] .tabbrowser-tab .tab-background {
+  border-radius: 9px !important;
+}
+#tabbrowser-tabs[orient="vertical"] .tabbrowser-tab[selected] .tab-background {
+  background-color: var(--drift-accent-soft) !important;
+}
+#tabbrowser-tabs[orient="vertical"] .tabbrowser-tab[selected] .tab-label {
+  color: var(--drift-accent) !important;
+  font-weight: 600 !important;
 }
 
-/* === Tab strip close button === */
-.tab-close-button {
-  color: var(--drift-text-3) !important;
-  border-radius: 5px !important;
-}
-.tab-close-button:hover {
-  background-color: rgba(160, 60, 40, 0.12) !important;
-  color: #a23a28 !important;
-}
-
-/* === Window chrome separator — minimal: none === */
+/* === Inactive window dim === */
 #navigator-toolbox:-moz-window-inactive {
   opacity: 0.88;
 }

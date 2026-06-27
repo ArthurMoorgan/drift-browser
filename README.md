@@ -83,16 +83,30 @@ The UI is split across two delivery mechanisms:
 
 | Mechanism | What it carries |
 |-----------|----------------|
-| `src/` (surfer overlay) | **New files** that don't exist in vanilla Firefox — `drift-theme.css`, `drift-newtab.js`, Inter/Fraunces fonts (`.woff2`). `npx surfer import` copies them verbatim into `engine/`. |
-| `patches/drift-engine-changes.patch` | **Modifications to existing Firefox files** — `browser-shared.css` (imports drift-theme.css), `jar.inc.mn` (registers new CSS + fonts), `addon-jar.mn` (registers newtab JS), `firefox.js` (startup prefs: hide bookmarks bar, disable telemetry), `activity-stream.html` (full newtab replacement), plus all Windows build-fix patches. |
+| `src/` (surfer overlay) | **New files** that don't exist in vanilla Firefox — `drift-theme.css`, `drift-theme-chrome.js` (the theme engine), `drift-newtab.js`, Inter/Fraunces fonts (`.woff2`). `npx surfer import` copies them verbatim into `engine/`. |
+| `patches/drift-engine-changes.patch` | **Modifications to existing Firefox files** — `browser-shared.css` (imports drift-theme.css), `jar.inc.mn` (registers new CSS + fonts), `addon-jar.mn` (registers newtab JS), `browser.xhtml` + `base/jar.mn` (load + register the theme engine), `firefox.js` (`drift.*` theme prefs, sidebar.revamp, startup prefs), `activity-stream.html` (full newtab replacement), plus all Windows build-fix patches. |
+
+### Chrome theme engine (`drift-theme-chrome.js`)
+
+The browser chrome is no longer a single static cream skin — it is a **runtime theme system** driven by `drift.*` prefs:
+
+- **7 themes**: `light` · `sepia` · `arctic` · `dark` · `midnight` · `slate` · `noir` (pref `drift.theme`)
+- **14 accent presets** with light/dark variants, or a custom hex (`drift.accent` / `drift.accentMode` / `drift.accentCustom`)
+- **Live glass translucency + frost blur** (`drift.glass` 20–95, `drift.blur` px)
+- **Modes**: `normal` · `lite` (opaque, no animation) · `minimal` (`drift.mode`)
+- **Layout flags**: vertical tabs (`drift.vtabs`, mirrors into native `sidebar.verticalTabs`), compact, centered URL, acrylic
+
+`drift-theme-chrome.js` is loaded by `browser.xhtml`, reads these prefs, and applies a `drift-theme` / `drift-mode` attribute plus inline CSS custom properties to the chrome root, re-applying live on any pref change. `drift-theme.css` then reacts via `:root[drift-theme="…"]` palette blocks. Native popups, menus, the downloads/library panels and the urlbar results are themed through the same palette so the whole UI follows the active theme.
 
 ### `src/` layout (mirrors `engine/` tree)
 
 ```
 src/
   browser/
+    base/content/
+      drift-theme-chrome.js    ← theme engine: drift.* prefs → drift-theme attr + CSS vars (live)
     themes/shared/
-      drift-theme.css          ← cream/terracotta palette, Inter font, toolbar vars, tab styling
+      drift-theme.css          ← 7 theme palettes, accents, glass, lite/minimal, native-panel theming
     extensions/newtab/
       data/content/
         drift-newtab.js        ← theme init, clock, search, dock, widgets, settings panel
