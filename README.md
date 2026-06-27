@@ -2,14 +2,14 @@
 
 Drift is a custom Firefox-based browser built with [surfer](https://github.com/zen-browser/surfer), based on **Firefox 152.0.2**.
 
+It ships a fully custom UI: cream/terracotta palette, Inter and Fraunces typography, 7 themes × 12 accent colours, minimal chrome (no bookmarks bar by default), and a redesigned new-tab page with clock, search, and dock widgets — no AI content.
+
 ## Screenshots
 
 | | |
 |---|---|
-| ![New Tab](screenshots/drift-home.png) | ![Settings](screenshots/drift-settings.png) |
-| *New Tab page with search and shortcuts* | *Settings — Account, sync, and Drift-specific options* |
-| ![Browsing](screenshots/drift-browsing.png) | ![About](screenshots/drift-about.png) |
-| *Browsing the web (example.com)* | *about:about — full list of internal pages* |
+| ![New Tab](screenshots/drift-home.png) | ![Browsing](screenshots/drift-browsing.png) |
+| *New Tab — clock, search, dock widgets (cream theme)* | *Browsing — minimal chrome, warm palette* |
 
 ## Platform
 
@@ -59,22 +59,50 @@ npm install
 npx surfer download
 
 # 4. Import Drift branding and apply surfer overlays
+#    This also copies everything under src/ into engine/
 npx surfer import
 
-# 5. Apply the Windows build-fix patches
+# 5. Apply the engine patches (build fixes + UI modifications to existing Firefox files)
 cd engine
 git apply ../patches/drift-engine-changes.patch
 cd ..
 
 # 6. Build
-npx surfer build
+bash do-build.sh
 
-# (or, if you prefer to invoke mach directly)
-# bash do-build.sh
+# 7. Package (produces installer + zip in engine/obj-x86_64-pc-windows-msvc/dist/)
+bash do-package.sh
 ```
 
 The first build takes 30–90 minutes depending on hardware. Subsequent incremental
 builds are much faster.
+
+### How the Drift UI is layered
+
+The UI is split across two delivery mechanisms:
+
+| Mechanism | What it carries |
+|-----------|----------------|
+| `src/` (surfer overlay) | **New files** that don't exist in vanilla Firefox — `drift-theme.css`, `drift-newtab.js`, Inter/Fraunces fonts (`.woff2`). `npx surfer import` copies them verbatim into `engine/`. |
+| `patches/drift-engine-changes.patch` | **Modifications to existing Firefox files** — `browser-shared.css` (imports drift-theme.css), `jar.inc.mn` (registers new CSS + fonts), `addon-jar.mn` (registers newtab JS), `firefox.js` (startup prefs: hide bookmarks bar, disable telemetry), `activity-stream.html` (full newtab replacement), plus all Windows build-fix patches. |
+
+### `src/` layout (mirrors `engine/` tree)
+
+```
+src/
+  browser/
+    themes/shared/
+      drift-theme.css          ← cream/terracotta palette, Inter font, toolbar vars, tab styling
+    extensions/newtab/
+      data/content/
+        drift-newtab.js        ← theme init, clock, search, dock, widgets, settings panel
+      prerendered/fonts/
+        inter.woff2            ← Inter variable font (newtab local copy)
+        fraunces.woff2         ← Fraunces variable font (newtab local copy)
+    fonts/drift/
+      inter.woff2              ← Inter font served as chrome://browser/skin/fonts/drift/inter.woff2
+      fraunces.woff2           ← Fraunces font served as chrome://browser/skin/fonts/drift/fraunces.woff2
+```
 
 ### Project layout
 
@@ -89,15 +117,16 @@ configs/             # Per-platform mozconfig overrides
 locales/             # Supported locale list
 patches/             # Unified-diff patches applied to the Firefox source after download
   drift-engine-changes.patch
-src/                 # surfer source overlay (files here mirror the engine/ tree and
-                     # are applied on top of Firefox source during `npx surfer import`)
+src/                 # surfer source overlay — files here mirror engine/ tree and are
+                     # copied into engine/ during `npx surfer import`
 do-build.sh          # Convenience wrapper: sets PATH/env then runs mach build (Windows/MSYS)
 do-configure.sh      # Same for mach configure
+do-package.sh        # Runs mach package to produce installer + zip
 ```
 
 ### What the patch covers (`patches/drift-engine-changes.patch`)
 
-The patch must be applied with `git apply` (or `patch -p1`) from inside `engine/` after
+The patch is applied with `git apply` (or `patch -p1`) from inside `engine/` after
 `npx surfer import`. It contains:
 
 | File | Change |
@@ -108,8 +137,22 @@ The patch must be applied with `git apply` (or `patch -p1`) from inside `engine/
 | `build/moz.configure/toolchain.configure` | Clang MinGW triple fix (Windows builds) |
 | `build/moz.configure/windows-toolchain.configure` | MSVC / MinGW header path selection |
 | `dom/crypto/CryptoBuffer.h` | Use `BufferSourceBinding.h` (forward-decl was insufficient) |
-| `python/mozbuild/mozbuild/backend/recursivemake.py` | **Windows MAX_PATH fix** — skip per-object `.obj` prerequisites in generated `backend.mk` on `os.name == "nt"` |
+| `python/mozbuild/mozbuild/backend/recursivemake.py` | **Windows MAX_PATH fix** — skip per-object `.obj` prerequisites on `os.name == "nt"` |
 | `python/mozbuild/mozbuild/jar.py` | **Windows MAX_PATH fix** — `os.path.abspath(basepath)` in `OutputHelper_flat.__init__` |
+| `browser/themes/shared/browser-shared.css` | Imports `drift-theme.css` after all other imports |
+| `browser/themes/shared/jar.inc.mn` | Registers `drift-theme.css` and `fonts/drift/*.woff2` in chrome |
+| `browser/extensions/newtab/addon-jar.mn` | Registers `drift-newtab.js` as a content resource |
+| `browser/extensions/newtab/prerendered/activity-stream.html` | Full newtab replacement (cream palette, clock, search, dock, settings) |
+| `browser/app/profile/firefox.js` | Startup prefs: hide bookmarks bar, close sidebar, disable newtab telemetry |
+
+### Drift UI features (Layer 1)
+
+- **7 themes**: Cream, Terracotta, Forest, Ocean, Midnight, Rose, Slate
+- **12 accent colours**: selectable per-theme
+- **Typography**: Inter (UI) and Fraunces (display/headings)
+- **Minimal chrome**: bookmarks bar hidden by default; sidebar closed at startup
+- **New-tab page**: clock, date, search bar, app dock, widget grid — no AI, no Pocket, no recommendations
+- **Settings panel**: theme picker, accent picker, font size controls — stored in localStorage
 
 ### Windows MAX_PATH notes
 
@@ -140,15 +183,15 @@ manual post-configure edit is needed.
 
 If you build with `--disable-tests` in `configs/windows/mozconfig`, the WebIDL
 codegen may produce an incomplete `OwningUnrestrictedDoubleOrString` type in
-`obj-*/dist/include/mozilla/dom/AnimationEffectBinding.h`. The root cause is
-`dom/bindings/Codegen.py` not handling single-file unions correctly when test
-WebIDL files are absent. Workaround: run `mach build` and if the style crate
-fails with an incomplete-type error, add a full `OwningUnrestrictedDoubleOrString`
-class definition (modelled on `OwningNodeOrString` from `UnionTypes.h`) to that
-generated header.
+`obj-*/dist/include/mozilla/dom/AnimationEffectBinding.h`. Workaround: run
+`mach build` and if the style crate fails with an incomplete-type error, add a
+full `OwningUnrestrictedDoubleOrString` class definition (modelled on
+`OwningNodeOrString` from `UnionTypes.h`) to that generated header.
 
 ---
 
 ## About
 
-Drift is a custom-branded Firefox 152.0.2 build targeting Windows x86_64.
+Drift is a custom-branded Firefox 152.0.2 build targeting Windows x86_64. The
+Drift UI is designed for focus and calm productivity — no noise, no tracking,
+no AI integration.
