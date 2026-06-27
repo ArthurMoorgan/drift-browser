@@ -1,0 +1,29 @@
+# Firefox source tree (re-fetched via `npx surfer download`)
+engine/
+
+# surfer cache / downloaded archives
+.surfer/engine/
+*.tar.xz
+*.tar.bz2
+
+# Build output
+dist/
+obj-*/
+
+# npm / Node
+node_modules/
+*.zip
+
+# Build-session log files
+*.log
+*.log.err
+
+# Machine-specific build helper scripts (session artefacts, not project files)
+build-drift.sh
+build-env-test.sh
+build-final.sh
+build-final2.sh
+build-package.sh
+build-resume.sh
+link_xul.sh
+run-build*.sh

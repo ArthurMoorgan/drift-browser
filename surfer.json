@@ -1,0 +1,35 @@
+{
+  "name": "Drift",
+  "vendor": "Drift",
+  "appId": "drift",
+  "binaryName": "drift",
+  "version": {
+    "product": "firefox",
+    "version": "152.0.2",
+    "candidate": "152.0.2",
+    "candidateBuild": 1
+  },
+  "buildOptions": {
+    "generateBranding": true
+  },
+  "addons": {},
+  "brands": {
+    "release": {
+      "backgroundColor": "#1B1B1D",
+      "brandShorterName": "Drift",
+      "brandShortName": "Drift",
+      "brandFullName": "Drift",
+      "release": {
+        "displayVersion": "1.0.0",
+        "github": {
+          "repo": "ArthurMoorgan/drift-gecko"
+        }
+      }
+    }
+  },
+  "license": {
+    "ignoredFiles": [".*\\.json"],
+    "licenseType": "MPL-2.0"
+  },
+  "updateHostname": "updates.drift.local"
+}
