@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Drift cream/terracotta palette — sourced from chrome.css design tokens -->
+    <color name="bg1">#f8f2e4</color>
+    <color name="bg2">#efe4cf</color>
+    <color name="surface">#A0FFFCF4</color>
+    <color name="surface_solid">#fbf6ea</color>
+    <color name="surface_strong">#DBFFFDF7</color>
+    <color name="hover">#14785F37</color>
+
+    <color name="border">#29967D55</color>
+    <color name="border_light">#B3FFFFFF</color>
+    <color name="hairline">#1A785F37</color>
+
+    <!-- Text — warm charcoal -->
+    <color name="text1">#3a342a</color>
+    <color name="text2">#7c7361</color>
+    <color name="text3">#a89d85</color>
+
+    <!-- Terracotta accent -->
+    <color name="accent">#c2703d</color>
+    <color name="accent_deep">#a85a2c</color>
+    <color name="accent_soft">#1Fc2703d</color>
+    <color name="accent_ring">#61c2703d</color>
+
+    <!-- Icon tint states -->
+    <color name="icon_enabled">#7c7361</color>
+    <color name="icon_disabled">#40a89d85</color>
+    <color name="icon_pressed">#3a342a</color>
+
+    <!-- Status bar / navigation bar -->
+    <color name="status_bar">#fbf6ea</color>
+    <color name="nav_bar">#fbf6ea</color>
+</resources>

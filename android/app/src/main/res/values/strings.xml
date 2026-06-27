@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Drift</string>
+    <string name="search_hint">Search or enter address</string>
+    <string name="new_tab">New Tab</string>
+    <string name="tabs">Tabs</string>
+    <string name="back">Back</string>
+    <string name="forward">Forward</string>
+    <string name="reload">Reload</string>
+    <string name="stop">Stop</string>
+    <string name="menu">Menu</string>
+    <string name="close">Close</string>
+    <string name="close_tab">Close tab</string>
+    <string name="clear">Clear</string>
+    <string name="secure">Secure connection</string>
+    <string name="add_tab">Add tab</string>
+    <string name="drift_tagline">Drift — your calm corner of the web</string>
+</resources>

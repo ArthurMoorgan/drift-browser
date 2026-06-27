@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="160dp"
+    android:layout_margin="6dp"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="2dp"
+    app:cardBackgroundColor="@color/surface_solid"
+    android:foreground="@drawable/tab_card_ripple">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <!-- Preview area (cream-tinted placeholder) -->
+        <View
+            android:id="@+id/tabPreview"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:background="@color/bg2"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toTopOf="@id/tabTitleBar" />
+
+        <!-- Close button (top-right) -->
+        <ImageButton
+            android:id="@+id/btnTabClose"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:src="@drawable/ic_close"
+            android:tint="@color/text2"
+            android:background="@drawable/tab_close_btn_bg"
+            android:contentDescription="@string/close_tab"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_margin="6dp" />
+
+        <!-- Title bar (bottom strip) -->
+        <LinearLayout
+            android:id="@+id/tabTitleBar"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@color/surface_solid"
+            android:paddingStart="10dp"
+            android:paddingEnd="10dp"
+            android:paddingTop="6dp"
+            android:paddingBottom="6dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
+
+            <TextView
+                android:id="@+id/tabTitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/new_tab"
+                android:textSize="13sp"
+                android:textColor="@color/text1"
+                android:fontFamily="sans-serif-medium"
+                android:singleLine="true"
+                android:ellipsize="end" />
+
+            <TextView
+                android:id="@+id/tabUrl"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="1dp"
+                android:textSize="11sp"
+                android:textColor="@color/text3"
+                android:singleLine="true"
+                android:ellipsize="end" />
+
+        </LinearLayout>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</androidx.cardview.widget.CardView>

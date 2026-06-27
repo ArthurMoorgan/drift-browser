@@ -1,0 +1,137 @@
+name: Build Drift for Android
+
+on:
+  push:
+    branches: [ master ]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    steps:
+      # ── Checkout ──────────────────────────────────────────────────────────
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # ── JDK 17 ────────────────────────────────────────────────────────────
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: gradle
+
+      # ── Android SDK ───────────────────────────────────────────────────────
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      # ── Gradle wrapper ────────────────────────────────────────────────────
+      # Download and install the wrapper jar so ./gradlew works without
+      # checking in the binary
+      - name: Install Gradle wrapper
+        uses: gradle/actions/setup-gradle@v3
+        with:
+          gradle-version: '8.7'
+
+      - name: Bootstrap Gradle wrapper jar
+        working-directory: android
+        run: gradle wrapper --gradle-version 8.7 --distribution-type bin
+
+      # ── Signing keystore ──────────────────────────────────────────────────
+      # Generate a self-signed keystore for CI release signing.
+      # For production use, store the keystore as a base64 secret and
+      # set KEYSTORE_BASE64, KEYSTORE_PASSWORD, KEY_ALIAS, KEY_PASSWORD.
+      - name: Generate / restore keystore
+        working-directory: android
+        run: |
+          if [ -n "${{ secrets.KEYSTORE_BASE64 }}" ]; then
+            echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > keystore.jks
+            echo "KEYSTORE_PASSWORD=${{ secrets.KEYSTORE_PASSWORD }}" >> $GITHUB_ENV
+            echo "KEY_ALIAS=${{ secrets.KEY_ALIAS }}"                 >> $GITHUB_ENV
+            echo "KEY_PASSWORD=${{ secrets.KEY_PASSWORD }}"           >> $GITHUB_ENV
+          else
+            keytool -genkeypair -v \
+              -keystore keystore.jks \
+              -alias drift \
+              -keyalg RSA -keysize 2048 -validity 10000 \
+              -storepass driftbrowser123 -keypass driftbrowser123 \
+              -dname "CN=Drift Browser, OU=Android, O=Drift, C=US" \
+              -storetype JKS 2>/dev/null
+            echo "KEYSTORE_PASSWORD=driftbrowser123" >> $GITHUB_ENV
+            echo "KEY_ALIAS=drift"                   >> $GITHUB_ENV
+            echo "KEY_PASSWORD=driftbrowser123"      >> $GITHUB_ENV
+          fi
+          echo "KEYSTORE_PATH=$(pwd)/keystore.jks" >> $GITHUB_ENV
+
+      # ── Build ─────────────────────────────────────────────────────────────
+      - name: Build release APK
+        working-directory: android
+        env:
+          KEYSTORE_PATH: ${{ env.KEYSTORE_PATH }}
+          KEYSTORE_PASSWORD: ${{ env.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ env.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ env.KEY_PASSWORD }}
+        run: ./gradlew assembleRelease --no-daemon --stacktrace
+
+      # ── Locate APK ────────────────────────────────────────────────────────
+      - name: Locate APKs
+        id: apk
+        run: |
+          # arm64 preferred, fall back to universal / armeabi-v7a
+          APK=$(find android/app/build/outputs/apk/release -name "*.apk" | sort | head -1)
+          echo "APK_PATH=$APK" >> $GITHUB_OUTPUT
+          echo "APK_NAME=$(basename $APK)" >> $GITHUB_OUTPUT
+          echo "APK_SIZE=$(du -sh $APK | cut -f1)" >> $GITHUB_OUTPUT
+          ls -lh android/app/build/outputs/apk/release/
+
+      # ── Upload artifact ───────────────────────────────────────────────────
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: drift-android-${{ github.run_number }}
+          path: android/app/build/outputs/apk/release/*.apk
+          retention-days: 30
+
+      # ── GitHub Release ────────────────────────────────────────────────────
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: android-v1.0.${{ github.run_number }}
+          name: "Drift for Android 1.0.${{ github.run_number }}"
+          body: |
+            ## Drift for Android — v1.0.${{ github.run_number }}
+
+            A GeckoView-based Android browser with the Drift cream/terracotta design.
+
+            ### What's in v1
+            - GeckoView engine (Firefox-grade browsing)
+            - Drift new-tab page (clock, animated background, glass search, quick-links dock)
+            - Cream/terracotta theme — all 7 themes applied to new-tab page
+            - Address bar with smart URL / search detection (Google)
+            - Multi-tab support with tab-switcher grid
+            - Back / forward / reload / stop navigation
+            - HTTPS lock icon
+            - Tracking protection enabled
+
+            ### Deferred to v2
+            - Bookmarks / history panel
+            - Downloads manager
+            - Per-app theme selector (in-app settings)
+            - Custom search engine
+            - Proper signing with a release keystore
+
+            ### Install instructions
+            1. Download the `.apk` below
+            2. On your Android device: **Settings → Apps → Special app access → Install unknown apps** → enable for your browser or Files app
+            3. Open the APK file on your device and tap **Install**
+
+            > APK size: ${{ steps.apk.outputs.APK_SIZE }}
+            > Built from commit `${{ github.sha }}`
+          files: android/app/build/outputs/apk/release/*.apk
+          draft: false
+          prerelease: false

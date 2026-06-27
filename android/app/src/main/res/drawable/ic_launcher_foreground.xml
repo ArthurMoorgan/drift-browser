@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Drift icon foreground: rising-arrow mark from icon.svg, white on transparent -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="1024"
+    android:viewportHeight="1024">
+
+    <!-- Outer ring (50% opacity) -->
+    <path
+        android:fillColor="@android:color/transparent"
+        android:strokeColor="#80FFFFFF"
+        android:strokeWidth="34"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:pathData="M 808,512 A 296,296 0 1 1 807.99,511.99 Z"/>
+
+    <!-- Curved wake line -->
+    <path
+        android:fillColor="@android:color/transparent"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="34"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:pathData="M292,644 C432,730 566,598 724,356"/>
+
+    <!-- Arrow head -->
+    <path
+        android:fillColor="@android:color/transparent"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="34"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:pathData="M556,356 L740,324 L710,506"/>
+
+    <!-- Orb (figure dot) -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M396,542 a58,58 0 1 1 -0.01,0 Z"/>
+
+    <!-- Small dot at arrow tip -->
+    <path
+        android:fillColor="#D9FFFFFF"
+        android:pathData="M770,283 a19,19 0 1 1 -0.01,0 Z"/>
+
+</vector>
