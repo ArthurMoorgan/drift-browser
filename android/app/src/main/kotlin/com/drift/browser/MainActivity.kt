@@ -209,8 +209,7 @@ class MainActivity : AppCompatActivity() {
         session.navigationDelegate = object : GeckoSession.NavigationDelegate {
             override fun onLocationChange(
                 s: GeckoSession,
-                url: String?,
-                perms: MutableList<GeckoSession.PermissionDelegate.ContentPermission>
+                url: String?
             ) = withTab(s) { tab ->
                 tab.url = url ?: ""
                 if (tab == activeTab) runOnUiThread { updateUrlBar(tab.url) }
@@ -385,7 +384,7 @@ class MainActivity : AppCompatActivity() {
     inner class TabGridAdapter(
         private val onSelect: (Int) -> Unit,
         private val onClose:  (Int) -> Unit,
-    ) : ListAdapter<TabSnapshot, TabGridAdapter.VH>(DIFF) {
+    ) : ListAdapter<TabSnapshot, TabGridAdapter.VH>(TAB_DIFF) {
 
         inner class VH(val b: ItemTabBinding) : RecyclerView.ViewHolder(b.root)
 
@@ -404,11 +403,12 @@ class MainActivity : AppCompatActivity() {
             holder.b.btnTabClose.setOnClickListener { onClose(holder.bindingAdapterPosition) }
         }
 
-        companion object {
-            val DIFF = object : DiffUtil.ItemCallback<TabSnapshot>() {
-                override fun areItemsTheSame(a: TabSnapshot, b: TabSnapshot) = a.id == b.id
-                override fun areContentsTheSame(a: TabSnapshot, b: TabSnapshot) = a == b
-            }
+    }
+
+    companion object {
+        private val TAB_DIFF = object : DiffUtil.ItemCallback<TabSnapshot>() {
+            override fun areItemsTheSame(a: TabSnapshot, b: TabSnapshot) = a.id == b.id
+            override fun areContentsTheSame(a: TabSnapshot, b: TabSnapshot) = a == b
         }
     }
 }
