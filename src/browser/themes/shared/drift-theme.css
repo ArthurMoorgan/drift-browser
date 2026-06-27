@@ -4,11 +4,13 @@
 
 /* ============================================================
    Drift — browser chrome theme
-   7 runtime themes (Light Sepia Arctic Dark Midnight Slate Noir),
-   14 accent presets, live glass/blur, lite + minimal modes.
-   Theme/accent/glass/mode are applied to the chrome root as
-   drift-theme / drift-mode attributes + inline CSS vars by
-   drift-theme-chrome.js (driven by drift.* prefs).
+   The whole palette is derived from one background colour by
+   drift-theme-chrome.js, which sets the --drift-* custom
+   properties inline on the chrome root (plus --drift-toolbox-bg
+   for a solid colour / gradient / image background). The :root
+   block below is only a fallback used before the engine runs.
+   Settings live in an in-chrome popup (drift-settings.js), and
+   split view in drift-split.js.
    ============================================================ */
 
 @font-face {
@@ -26,16 +28,8 @@
   src: url("chrome://browser/skin/fonts/drift/fraunces.woff2") format("woff2");
 }
 
-/* ============================================================
-   THEME PALETTES — 21-var contract per theme.
-   Default :root == Light. drift-theme-chrome.js sets
-   [drift-theme="..."] on the root for the others.
-   --drift-accent / -deep / -soft / -ring are set inline by JS
-   (per active accent preset), so they are intentionally omitted
-   from the palette blocks below except as fallbacks in :root.
-   ============================================================ */
+/* Fallback palette (cream) — overridden inline by the theme engine. */
 :root {
-  /* Light (default) */
   --drift-cream-1: #f8f2e4;
   --drift-cream-2: #efe4cf;
   --drift-surface: rgba(255, 252, 244, 0.62);
@@ -54,158 +48,19 @@
   --drift-shadow-lg: 0 24px 60px rgba(100, 78, 48, 0.26);
   --drift-inset-light: inset 0 1px 0 rgba(255, 255, 255, 0.65);
   --drift-close-hover: #e5573f;
-
-  /* Accent fallbacks (JS overrides these inline). */
   --drift-accent: #c2703d;
   --drift-accent-deep: #a85a2c;
   --drift-accent-soft: rgba(194, 112, 61, 0.13);
   --drift-accent-ring: rgba(194, 112, 61, 0.38);
-
-  /* Glass / blur fallbacks (JS overrides inline). */
   --drift-glass: 0.45;
   --drift-blur: 20px;
   --drift-titlebar-h: 34px;
   --drift-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --drift-toolbox-bg: linear-gradient(155deg, var(--drift-cream-1) 0%, var(--drift-cream-2) 100%);
 }
 
-/* Sepia — warm parchment (light) */
-:root[drift-theme="sepia"] {
-  --drift-cream-1: #efe2c6;
-  --drift-cream-2: #e3d2ac;
-  --drift-surface: rgba(250, 242, 224, 0.62);
-  --drift-surface-strong: rgba(250, 244, 228, 0.88);
-  --drift-surface-solid: #f4ead0;
-  --drift-hover: rgba(110, 84, 44, 0.09);
-  --drift-active: rgba(110, 84, 44, 0.15);
-  --drift-border: rgba(140, 110, 65, 0.20);
-  --drift-border-light: rgba(255, 250, 235, 0.70);
-  --drift-hairline: rgba(110, 84, 44, 0.12);
-  --drift-text-1: #4a3f2a;
-  --drift-text-2: #837049;
-  --drift-text-3: #a8966b;
-  --drift-shadow-sm: 0 1px 3px rgba(110, 84, 44, 0.12);
-  --drift-shadow-md: 0 6px 22px rgba(110, 84, 44, 0.16);
-  --drift-shadow-lg: 0 24px 60px rgba(90, 66, 34, 0.28);
-  --drift-inset-light: inset 0 1px 0 rgba(255, 250, 235, 0.60);
-  --drift-close-hover: #e5573f;
-}
-
-/* Arctic — cool blue-white (light) */
-:root[drift-theme="arctic"] {
-  --drift-cream-1: #eef3f8;
-  --drift-cream-2: #dde7f0;
-  --drift-surface: rgba(255, 255, 255, 0.66);
-  --drift-surface-strong: rgba(255, 255, 255, 0.90);
-  --drift-surface-solid: #f6f9fc;
-  --drift-hover: rgba(40, 70, 110, 0.07);
-  --drift-active: rgba(40, 70, 110, 0.12);
-  --drift-border: rgba(70, 100, 140, 0.16);
-  --drift-border-light: rgba(255, 255, 255, 0.80);
-  --drift-hairline: rgba(70, 100, 140, 0.10);
-  --drift-text-1: #25303d;
-  --drift-text-2: #5e6e7e;
-  --drift-text-3: #93a3b3;
-  --drift-shadow-sm: 0 1px 3px rgba(40, 70, 110, 0.10);
-  --drift-shadow-md: 0 6px 22px rgba(40, 70, 110, 0.14);
-  --drift-shadow-lg: 0 24px 60px rgba(30, 55, 90, 0.24);
-  --drift-inset-light: inset 0 1px 0 rgba(255, 255, 255, 0.70);
-  --drift-close-hover: #e5573f;
-}
-
-/* Dark — warm roast */
-:root[drift-theme="dark"] {
-  --drift-cream-1: #2b2620;
-  --drift-cream-2: #201c17;
-  --drift-surface: rgba(60, 52, 42, 0.55);
-  --drift-surface-strong: rgba(66, 57, 46, 0.86);
-  --drift-surface-solid: #2e2922;
-  --drift-hover: rgba(255, 244, 224, 0.07);
-  --drift-active: rgba(255, 244, 224, 0.13);
-  --drift-border: rgba(255, 236, 205, 0.12);
-  --drift-border-light: rgba(255, 240, 214, 0.16);
-  --drift-hairline: rgba(255, 236, 205, 0.09);
-  --drift-text-1: #f3ead9;
-  --drift-text-2: #bcae97;
-  --drift-text-3: #8c7f69;
-  --drift-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.40);
-  --drift-shadow-md: 0 6px 22px rgba(0, 0, 0, 0.45);
-  --drift-shadow-lg: 0 24px 60px rgba(0, 0, 0, 0.55);
-  --drift-inset-light: inset 0 1px 0 rgba(255, 245, 225, 0.08);
-  --drift-close-hover: #c14a36;
-}
-
-/* Midnight — deep navy (dark) */
-:root[drift-theme="midnight"] {
-  --drift-cream-1: #161d33;
-  --drift-cream-2: #0f1424;
-  --drift-surface: rgba(40, 50, 80, 0.50);
-  --drift-surface-strong: rgba(44, 55, 88, 0.86);
-  --drift-surface-solid: #1b2238;
-  --drift-hover: rgba(150, 180, 255, 0.08);
-  --drift-active: rgba(150, 180, 255, 0.14);
-  --drift-border: rgba(150, 180, 255, 0.14);
-  --drift-border-light: rgba(170, 195, 255, 0.16);
-  --drift-hairline: rgba(150, 180, 255, 0.10);
-  --drift-text-1: #e6ecfb;
-  --drift-text-2: #a9b4d4;
-  --drift-text-3: #7682a6;
-  --drift-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.45);
-  --drift-shadow-md: 0 6px 22px rgba(0, 0, 0, 0.50);
-  --drift-shadow-lg: 0 24px 60px rgba(0, 0, 0, 0.60);
-  --drift-inset-light: inset 0 1px 0 rgba(180, 200, 255, 0.07);
-  --drift-close-hover: #c14a36;
-}
-
-/* Slate — cool neutral grey (dark) */
-:root[drift-theme="slate"] {
-  --drift-cream-1: #222730;
-  --drift-cream-2: #191d24;
-  --drift-surface: rgba(60, 67, 78, 0.50);
-  --drift-surface-strong: rgba(64, 72, 84, 0.86);
-  --drift-surface-solid: #262b34;
-  --drift-hover: rgba(200, 210, 225, 0.07);
-  --drift-active: rgba(200, 210, 225, 0.13);
-  --drift-border: rgba(200, 210, 225, 0.12);
-  --drift-border-light: rgba(210, 220, 235, 0.14);
-  --drift-hairline: rgba(200, 210, 225, 0.09);
-  --drift-text-1: #e7ebf1;
-  --drift-text-2: #aab3c0;
-  --drift-text-3: #7c8693;
-  --drift-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.45);
-  --drift-shadow-md: 0 6px 22px rgba(0, 0, 0, 0.50);
-  --drift-shadow-lg: 0 24px 60px rgba(0, 0, 0, 0.60);
-  --drift-inset-light: inset 0 1px 0 rgba(220, 228, 240, 0.06);
-  --drift-close-hover: #c14a36;
-}
-
-/* Noir — true black (dark) */
-:root[drift-theme="noir"] {
-  --drift-cream-1: #000000;
-  --drift-cream-2: #000000;
-  --drift-surface: rgba(28, 28, 28, 0.60);
-  --drift-surface-strong: rgba(22, 22, 22, 0.90);
-  --drift-surface-solid: #0b0b0b;
-  --drift-hover: rgba(255, 255, 255, 0.06);
-  --drift-active: rgba(255, 255, 255, 0.12);
-  --drift-border: rgba(255, 255, 255, 0.10);
-  --drift-border-light: rgba(255, 255, 255, 0.14);
-  --drift-hairline: rgba(255, 255, 255, 0.07);
-  --drift-text-1: #f3f3f3;
-  --drift-text-2: #a6a6a6;
-  --drift-text-3: #6b6b6b;
-  --drift-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.60);
-  --drift-shadow-md: 0 6px 22px rgba(0, 0, 0, 0.70);
-  --drift-shadow-lg: 0 24px 60px rgba(0, 0, 0, 0.85);
-  --drift-inset-light: inset 0 1px 0 rgba(255, 255, 255, 0.05);
-  --drift-close-hover: #c14a36;
-}
-
-/* ============================================================
-   Map Firefox chrome color vars onto the Drift palette so the
-   whole UI follows the active theme. Declared unlayered so they
-   beat @layer tokens-foundation / tokens-browser-theme from
-   browser-colors.css (imported earlier in browser-shared.css).
-   ============================================================ */
+/* Map Firefox chrome colour vars onto the Drift palette so the whole UI
+   follows the active colour. Declared unlayered to beat browser-colors.css. */
 :root {
   --toolbar-bgcolor: color-mix(in srgb, var(--drift-surface-solid) calc(var(--drift-glass, 0.45) * 100%), transparent);
   --toolbar-color: var(--drift-text-1);
@@ -226,24 +81,24 @@
   --focus-outline-color: var(--drift-accent);
   --link-color: var(--drift-accent);
   --link-color-hover: var(--drift-accent-deep);
+  --sidebar-background-color: var(--drift-surface-solid);
+  --sidebar-text-color: var(--drift-text-1);
 }
 
-/* === Chrome toolbox: warm-gradient base === */
+/* === Chrome toolbox: solid colour / gradient / image background === */
 #navigator-toolbox {
-  background: linear-gradient(155deg, var(--drift-cream-1) 0%, var(--drift-cream-2) 100%) !important;
+  background: var(--drift-toolbox-bg) !important;
   color: var(--drift-text-1) !important;
   font-family: "Inter", "Segoe UI", system-ui, sans-serif !important;
   border-bottom: none !important;
 }
 
-/* === Tab strip === */
 #TabsToolbar {
   background-color: transparent !important;
   color: var(--drift-text-2) !important;
   padding-block: 4px !important;
 }
 
-/* === Nav-bar (address bar row): glass pill === */
 #nav-bar {
   background-color: color-mix(in srgb, var(--drift-surface-solid) calc(var(--drift-glass, 0.45) * 100%), transparent) !important;
   backdrop-filter: blur(var(--drift-blur)) saturate(1.2) !important;
@@ -253,7 +108,6 @@
   box-shadow: none !important;
 }
 
-/* === Toolbar buttons === */
 .toolbarbutton-1 {
   color: var(--drift-text-2) !important;
   border-radius: 6px !important;
@@ -268,7 +122,6 @@
   color: var(--drift-text-1) !important;
 }
 
-/* === URL bar / omnibox: glass pill === */
 #urlbar-background {
   background-color: var(--drift-surface) !important;
   border: 1px solid var(--drift-border) !important;
@@ -286,14 +139,9 @@
   font-family: "Inter", "Segoe UI", system-ui, sans-serif !important;
   font-size: 13.5px !important;
 }
-#urlbar-input::placeholder {
-  color: var(--drift-text-3) !important;
-}
-:root[drift-center-url="true"] #urlbar-input {
-  text-align: center !important;
-}
+#urlbar-input::placeholder { color: var(--drift-text-3) !important; }
+:root[drift-center-url="true"] #urlbar-input { text-align: center !important; }
 
-/* Identity icon (lock / globe) and page actions */
 #identity-icon,
 #urlbar-go-button,
 .urlbar-page-action {
@@ -301,57 +149,31 @@
   fill: var(--drift-text-2) !important;
 }
 
-/* === Tabs: pill style === */
 .tab-background {
   border-radius: 8px 8px 0 0 !important;
   box-shadow: none !important;
   border: none !important;
   margin-inline: 2px !important;
 }
-.tabbrowser-tab:not([selected]) .tab-background:hover {
-  background-color: var(--drift-hover) !important;
-}
+.tabbrowser-tab:not([selected]) .tab-background:hover { background-color: var(--drift-hover) !important; }
 .tabbrowser-tab[selected] .tab-background {
   background-color: var(--drift-surface-strong) !important;
   box-shadow: var(--drift-shadow-sm) !important;
 }
-.tabbrowser-tab:not([selected]) .tab-label {
-  color: var(--drift-text-2) !important;
-}
-.tabbrowser-tab[selected] .tab-label {
-  color: var(--drift-text-1) !important;
-  font-weight: 500 !important;
-}
-.tab-label {
-  font-family: "Inter", "Segoe UI", system-ui, sans-serif !important;
-  font-size: 12.5px !important;
-}
+.tabbrowser-tab:not([selected]) .tab-label { color: var(--drift-text-2) !important; }
+.tabbrowser-tab[selected] .tab-label { color: var(--drift-text-1) !important; font-weight: 500 !important; }
+.tab-label { font-family: "Inter", "Segoe UI", system-ui, sans-serif !important; font-size: 12.5px !important; }
+.tab-throbber::before { border-top-color: var(--drift-accent) !important; }
 
-/* Loading spinner uses the accent */
-.tab-throbber::before {
-  border-top-color: var(--drift-accent) !important;
-}
+#new-tab-button { color: var(--drift-text-2) !important; }
+#new-tab-button:hover { background-color: var(--drift-hover) !important; color: var(--drift-text-1) !important; }
 
-/* === New tab button === */
-#new-tab-button {
-  color: var(--drift-text-2) !important;
-}
-#new-tab-button:hover {
-  background-color: var(--drift-hover) !important;
-  color: var(--drift-text-1) !important;
-}
-
-/* === Tab close button === */
-.tab-close-button {
-  color: var(--drift-text-3) !important;
-  border-radius: 5px !important;
-}
+.tab-close-button { color: var(--drift-text-3) !important; border-radius: 5px !important; }
 .tab-close-button:hover {
   background-color: color-mix(in srgb, var(--drift-close-hover) 18%, transparent) !important;
   color: var(--drift-close-hover) !important;
 }
 
-/* === Find bar === */
 #FindToolbar {
   background-color: var(--drift-surface-strong) !important;
   color: var(--drift-text-1) !important;
@@ -364,12 +186,8 @@
   border-radius: 6px !important;
 }
 
-/* === Notification bar === */
-.notificationbox-stack {
-  background-color: var(--drift-surface-strong) !important;
-}
+.notificationbox-stack { background-color: var(--drift-surface-strong) !important; }
 
-/* === Context menu and popups: glass panels === */
 panel.popup-internal-box,
 menupopup {
   --arrowpanel-background: var(--drift-surface-strong);
@@ -377,57 +195,14 @@ menupopup {
   --panel-border-color: var(--drift-border-light);
 }
 
-/* === Download indicator === */
-#downloads-button[attention] {
-  color: var(--drift-accent) !important;
-}
+#downloads-button[attention] { color: var(--drift-accent) !important; }
 
-/* === Bookmarks bar: hidden in default + minimal layout === */
-#PersonalToolbar {
-  display: none !important;
-}
+/* Bookmarks bar hidden in the default + minimal layouts (still toggleable via
+   the native pref / Drift settings). */
+#PersonalToolbar { display: none !important; }
+#sidebar-box:not([checked]):not([sidebarcommand]) { display: none !important; }
 
-/* Keep sidebar-box hidden unless explicitly opened. */
-#sidebar-box:not([checked]):not([sidebarcommand]) {
-  display: none !important;
-}
-
-/* ============================================================
-   LITE MODE — opaque, no frost, no animation. Glass/blur vars
-   are already forced opaque by drift-theme-chrome.js; here we
-   also drop backdrop-filter so nothing remains translucent.
-   ============================================================ */
-:root[drift-mode="lite"] #nav-bar,
-:root[drift-mode="lite"] #FindToolbar,
-:root[drift-mode="lite"] .notificationbox-stack,
-:root[drift-mode="lite"] panel.popup-internal-box,
-:root[drift-mode="lite"] menupopup {
-  backdrop-filter: none !important;
-}
-:root[drift-mode="lite"] *,
-:root[drift-mode="lite"] *::before,
-:root[drift-mode="lite"] *::after {
-  transition-duration: 0.001ms !important;
-  animation-duration: 0.001ms !important;
-}
-
-/* ============================================================
-   MINIMAL MODE — thinner chrome, slimmer controls.
-   ============================================================ */
-:root[drift-mode="minimal"] {
-  --drift-titlebar-h: 32px;
-}
-:root[drift-mode="minimal"] .toolbarbutton-1 {
-  border-radius: 8px !important;
-}
-:root[drift-mode="minimal"] #nav-bar {
-  padding-block: 3px 5px !important;
-}
-
-/* ============================================================
-   Native popups, menus, panels — Drift styling so the built-in
-   downloads / library / app-menu / context menus match.
-   ============================================================ */
+/* === Native popups, menus, panels === */
 menupopup,
 panel {
   --panel-background: var(--drift-surface-strong);
@@ -442,61 +217,220 @@ panel {
   --panel-item-hover-bgcolor: var(--drift-hover);
   --panel-item-active-bgcolor: var(--drift-active);
 }
-
 menuitem,
-menu {
-  color: var(--drift-text-1) !important;
-}
+menu { color: var(--drift-text-1) !important; }
 menuitem[_moz-menuactive="true"],
-menu[_moz-menuactive="true"] {
-  background-color: var(--drift-hover) !important;
-  color: var(--drift-text-1) !important;
-}
-
+menu[_moz-menuactive="true"] { background-color: var(--drift-hover) !important; color: var(--drift-text-1) !important; }
 panelview,
-.panel-arrowcontent {
-  background-color: var(--drift-surface-strong) !important;
-  color: var(--drift-text-1) !important;
-}
-
-/* urlbar autocomplete results */
-.urlbarView {
-  background-color: var(--drift-surface-strong) !important;
-  color: var(--drift-text-1) !important;
-}
+.panel-arrowcontent { background-color: var(--drift-surface-strong) !important; color: var(--drift-text-1) !important; }
+.urlbarView { background-color: var(--drift-surface-strong) !important; color: var(--drift-text-1) !important; }
 .urlbarView-row:hover,
-.urlbarView-row[selected] {
-  background-color: var(--drift-hover) !important;
-}
-.urlbarView-title {
-  color: var(--drift-text-1) !important;
-}
+.urlbarView-row[selected] { background-color: var(--drift-hover) !important; }
+.urlbarView-title { color: var(--drift-text-1) !important; }
 .urlbarView-url,
-.urlbarView-secondary {
-  color: var(--drift-text-2) !important;
-}
+.urlbarView-secondary { color: var(--drift-text-2) !important; }
+
+/* Vertical tabs (native revamp) — pills with accent selection. */
+#tabbrowser-tabs[orient="vertical"] .tabbrowser-tab .tab-background { border-radius: 9px !important; }
+#tabbrowser-tabs[orient="vertical"] .tabbrowser-tab[selected] .tab-background { background-color: var(--drift-accent-soft) !important; }
+#tabbrowser-tabs[orient="vertical"] .tabbrowser-tab[selected] .tab-label { color: var(--drift-accent) !important; font-weight: 600 !important; }
+
+/* === Minimal mode === */
+:root[drift-mode="minimal"] { --drift-titlebar-h: 32px; }
+:root[drift-mode="minimal"] .toolbarbutton-1 { border-radius: 8px !important; }
+:root[drift-mode="minimal"] #nav-bar { padding-block: 3px 5px !important; }
+
+#navigator-toolbox:-moz-window-inactive { opacity: 0.88; }
 
 /* ============================================================
-   Vertical tabs (native revamp sidebar) — Drift styling.
-   Only the light-DOM tab pills are targeted; sidebar surface
-   colours go through documented vars.
+   SPLIT VIEW (experimental) — tile the selected pane next to one
+   other tagged pane. Only active while #tabbrowser-tabpanels has
+   [drift-split]; otherwise the deck behaves normally.
    ============================================================ */
-:root {
-  --sidebar-background-color: var(--drift-surface-solid);
-  --sidebar-text-color: var(--drift-text-1);
+#tabbrowser-tabpanels[drift-split] {
+  display: flex !important;
+  flex-direction: row !important;
 }
-#tabbrowser-tabs[orient="vertical"] .tabbrowser-tab .tab-background {
-  border-radius: 9px !important;
+#tabbrowser-tabpanels[drift-split] > [drift-split-pane] {
+  display: flex !important;
+  visibility: visible !important;
+  flex: 1 1 0 !important;
+  min-width: 0 !important;
+  border-inline-end: 2px solid var(--drift-accent) !important;
 }
-#tabbrowser-tabs[orient="vertical"] .tabbrowser-tab[selected] .tab-background {
-  background-color: var(--drift-accent-soft) !important;
-}
-#tabbrowser-tabs[orient="vertical"] .tabbrowser-tab[selected] .tab-label {
-  color: var(--drift-accent) !important;
-  font-weight: 600 !important;
-}
+#tabbrowser-tabpanels[drift-split] > [drift-split-pane]:last-of-type { border-inline-end: none !important; }
 
-/* === Inactive window dim === */
-#navigator-toolbox:-moz-window-inactive {
-  opacity: 0.88;
+/* ============================================================
+   SETTINGS POPUP (drift-settings.js) — an in-chrome overlay.
+   ============================================================ */
+.drift-settings {
+  position: fixed;
+  inset: 0;
+  z-index: 2147483640;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: "Inter", "Segoe UI", system-ui, sans-serif;
 }
+.drift-settings[hidden] { display: none; }
+.ds-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(20, 16, 10, 0.34);
+  backdrop-filter: blur(7px);
+}
+.ds-card {
+  position: relative;
+  width: min(760px, 92vw);
+  max-height: 84vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--drift-surface-strong);
+  color: var(--drift-text-1);
+  border: 1px solid var(--drift-border-light);
+  border-radius: 16px;
+  box-shadow: var(--drift-shadow-lg, 0 24px 60px rgba(0,0,0,0.4));
+  backdrop-filter: blur(30px) saturate(1.4);
+  overflow: hidden;
+}
+.ds-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--drift-hairline);
+}
+.ds-title { font-family: "Fraunces", "Inter", serif; font-size: 19px; font-weight: 600; }
+.ds-close {
+  appearance: none;
+  border: none;
+  background: transparent;
+  color: var(--drift-text-2);
+  font-size: 22px;
+  line-height: 1;
+  width: 32px; height: 32px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.ds-close:hover { background: var(--drift-hover); color: var(--drift-text-1); }
+.ds-body { display: flex; min-height: 0; flex: 1; }
+.ds-nav {
+  flex: 0 0 150px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 14px 10px;
+  border-inline-end: 1px solid var(--drift-hairline);
+}
+.ds-navbtn {
+  appearance: none;
+  border: none;
+  background: transparent;
+  color: var(--drift-text-2);
+  text-align: start;
+  padding: 9px 12px;
+  border-radius: 9px;
+  font: inherit;
+  font-size: 14px;
+  cursor: pointer;
+}
+.ds-navbtn:hover { background: var(--drift-hover); color: var(--drift-text-1); }
+.ds-navbtn.active { background: var(--drift-accent-soft); color: var(--drift-accent); font-weight: 600; }
+.ds-content { flex: 1; overflow-y: auto; padding: 18px 22px; }
+.ds-section[hidden] { display: none; }
+.ds-h { font-family: "Fraunces", "Inter", serif; font-size: 22px; margin: 0 0 14px; font-weight: 600; }
+.ds-sublabel {
+  font-size: 11.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--drift-text-3);
+  margin: 16px 0 8px;
+}
+.ds-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 0;
+  font-size: 14px;
+}
+.ds-label { color: var(--drift-text-1); }
+.ds-note { font-size: 12.5px; color: var(--drift-text-2); margin-top: 12px; }
+.ds-muted { color: var(--drift-text-3) !important; }
+
+/* toggle switch */
+.ds-toggle {
+  appearance: none;
+  width: 40px; height: 22px;
+  border-radius: 999px;
+  background: var(--drift-active);
+  position: relative;
+  cursor: pointer;
+  transition: background 0.18s;
+  flex: 0 0 auto;
+}
+.ds-toggle::after {
+  content: "";
+  position: absolute;
+  top: 2px; inset-inline-start: 2px;
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  background: #fff;
+  transition: inset-inline-start 0.18s;
+}
+.ds-toggle:checked { background: var(--drift-accent); }
+.ds-toggle:checked::after { inset-inline-start: 20px; }
+
+.ds-slider { flex: 1; max-width: 220px; accent-color: var(--drift-accent); }
+.ds-select {
+  flex: 0 0 auto;
+  min-width: 150px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--drift-border);
+  background: var(--drift-surface);
+  color: var(--drift-text-1);
+  font: inherit;
+}
+.ds-btn {
+  appearance: none;
+  border: 1px solid var(--drift-border);
+  background: var(--drift-accent);
+  color: #fff;
+  padding: 8px 14px;
+  border-radius: 9px;
+  font: inherit;
+  cursor: pointer;
+}
+.ds-btn:hover { background: var(--drift-accent-deep); }
+.ds-linkbtn { color: var(--drift-accent); cursor: pointer; font-size: 13px; }
+.ds-linkbtn:hover { text-decoration: underline; }
+.ds-file { display: none; }
+
+.ds-swatches { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0 4px; }
+.ds-swatch {
+  width: 30px; height: 30px;
+  border-radius: 9px;
+  border: 1px solid var(--drift-border);
+  cursor: pointer;
+  padding: 0;
+}
+.ds-swatch:hover { transform: translateY(-1px); }
+
+.ds-wheel-wrap { display: flex; flex-direction: column; align-items: center; gap: 10px; margin: 4px 0 8px; }
+.ds-wheel { border-radius: 50%; cursor: crosshair; touch-action: none; box-shadow: var(--drift-shadow-sm); }
+.ds-value { width: 168px; accent-color: var(--drift-accent); }
+.ds-wheel-controls { display: flex; align-items: center; gap: 8px; }
+.ds-preview { width: 26px; height: 26px; border-radius: 7px; border: 1px solid var(--drift-border); }
+.ds-hex {
+  width: 90px;
+  padding: 5px 8px;
+  border-radius: 7px;
+  border: 1px solid var(--drift-border);
+  background: var(--drift-surface);
+  color: var(--drift-text-1);
+  font: inherit;
+  font-family: ui-monospace, "Cascadia Code", Consolas, monospace;
+}
+.ds-about-logo { font-family: "Fraunces", "Inter", serif; font-size: 30px; font-weight: 600; color: var(--drift-accent); }
+.ds-about-ver { color: var(--drift-text-2); margin: 6px 0 16px; font-size: 14px; }

@@ -31,8 +31,24 @@
     bing:       'https://www.bing.com/search?q=',
     duckduckgo: 'https://duckduckgo.com/?q=',
     brave:      'https://search.brave.com/search?q=',
+    startpage:  'https://www.startpage.com/sp/search?query=',
     ecosia:     'https://www.ecosia.org/search?q=',
   };
+  var ENGINE_LABELS = {
+    google: 'Google', bing: 'Bing', duckduckgo: 'DuckDuckGo',
+    brave: 'Brave', startpage: 'Startpage', ecosia: 'Ecosia',
+  };
+  // New-tab background presets (chrome:// assets bundled via jar.inc.mn).
+  var BACKGROUNDS = [
+    { id: 'none',       label: 'None' },
+    { id: 'cream',      label: 'Drift' },
+    { id: 'terracotta', label: 'Terracotta' },
+    { id: 'sage',       label: 'Sage' },
+    { id: 'ocean',      label: 'Ocean' },
+    { id: 'plum',       label: 'Plum' },
+    { id: 'dusk',       label: 'Dusk' },
+  ];
+  function bgUrl(id) { return 'chrome://browser/skin/drift-backgrounds/' + id + '.svg'; }
 
   /* ─── Persistence ─── */
   function lsGet(k, fallback) {
@@ -70,6 +86,37 @@
   }
 
   applyTheme();
+
+  /* ─── Background ─── */
+  var curBg = lsGet('drift.bg', 'none');
+
+  function applyBackground() {
+    var de = document.documentElement;
+    var body = document.body;
+    var src = null;
+    if (curBg === 'custom') {
+      src = lsGet('drift.bgCustom', '') || null;
+    } else if (curBg && curBg !== 'none') {
+      src = bgUrl(curBg);
+    }
+    if (src) {
+      body.style.backgroundImage =
+        'linear-gradient(var(--bg-scrim), var(--bg-scrim)), url("' + src + '")';
+      body.style.backgroundSize = 'cover';
+      body.style.backgroundPosition = 'center';
+      body.style.backgroundAttachment = 'fixed';
+      de.style.setProperty('--blob-op', '0');
+    } else {
+      body.style.backgroundImage = '';
+      body.style.backgroundSize = '';
+      de.style.removeProperty('--blob-op');
+    }
+  }
+  if (document.body) {
+    applyBackground();
+  } else {
+    document.addEventListener('DOMContentLoaded', applyBackground);
+  }
 
   /* ─── Clock ─── */
   function pad(n) { return String(n).padStart(2, '0'); }
@@ -182,35 +229,34 @@
 
   renderDock();
 
-  /* ─── Widgets ─── */
-  (function () {
-    var params = new URLSearchParams(location.search);
-    var showWeather   = params.get('weather')   === '1';
-    var showReminders = params.get('reminders') === '1';
-    var wloc = params.get('wloc') || lsGet('drift.wloc', '');
+  /* ─── Widgets (toggled via settings, persisted in localStorage) ─── */
+  function escHtml(s) {
+    return String(s).replace(/[&<>"]/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c];
+    });
+  }
+  function renderWidgets() {
     var wrap = document.getElementById('widgets');
-    if (!wrap || (!showWeather && !showReminders)) {
-      if (wrap) wrap.style.display = 'none';
-      return;
-    }
-    function esc(s) {
-      return String(s).replace(/[&<>"]/g, function (c) {
-        return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c];
-      });
-    }
+    if (!wrap) return;
+    var showWeather   = lsGet('drift.weather',   '0') === '1';
+    var showReminders = lsGet('drift.reminders_on', '0') === '1';
+    var wloc = lsGet('drift.wloc', '');
+    wrap.innerHTML = '';
+    if (!showWeather && !showReminders) { wrap.style.display = 'none'; return; }
+    wrap.style.display = '';
     function card(cls) { var d = document.createElement('div'); d.className = 'widget ' + cls; wrap.appendChild(d); return d; }
-
     if (showWeather) {
       var wc = card('weather-w');
       if (!wloc) {
-        wc.innerHTML = '<div class="w-title">Weather</div><div class="w-hint">Pass ?wloc=YourCity to enable weather.</div>';
+        wc.innerHTML = '<div class="w-title">Weather</div><div class="w-hint">Set a location in settings to enable weather.</div>';
       } else {
         wc.innerHTML = '<div class="w-title">Weather</div><div class="w-hint">Loading…</div>';
-        loadWeather(wc, wloc, esc);
+        loadWeather(wc, wloc, escHtml);
       }
     }
-    if (showReminders) renderReminders(card('rem-w'), esc);
-  })();
+    if (showReminders) renderReminders(card('rem-w'), escHtml);
+  }
+  renderWidgets();
 
   function weatherIcon(code, isDay) {
     var sun = isDay ? '☀️' : '🌙';
@@ -312,6 +358,90 @@
       });
       accentGrid.appendChild(btn);
     });
+
+    /* ── Background ── */
+    var bgSection = document.createElement('div');
+    var bgLabel = document.createElement('div'); bgLabel.className = 'sp-label'; bgLabel.textContent = 'Background';
+    bgSection.appendChild(bgLabel);
+    var bgGrid = document.createElement('div');
+    bgGrid.style.cssText = 'display:grid;grid-template-columns:repeat(4,1fr);gap:6px;';
+    function refreshBgSel() {
+      bgGrid.querySelectorAll('button').forEach(function (b) {
+        var on = b.dataset.bg === curBg;
+        b.setAttribute('aria-pressed', on ? 'true' : 'false');
+        b.style.outline = on ? '2px solid var(--accent)' : 'none';
+        b.style.outlineOffset = '1px';
+      });
+    }
+    BACKGROUNDS.forEach(function (b) {
+      var sw = document.createElement('button');
+      sw.type = 'button'; sw.dataset.bg = b.id; sw.title = b.label;
+      sw.style.cssText = 'height:32px;border-radius:8px;border:1px solid var(--border);cursor:pointer;background-size:cover;background-position:center;font-size:13px;';
+      if (b.id === 'none') { sw.style.background = 'var(--surface)'; sw.textContent = '—'; sw.style.color = 'var(--text-3)'; }
+      else { sw.style.backgroundImage = 'url("' + bgUrl(b.id) + '")'; }
+      sw.addEventListener('click', function () { curBg = b.id; lsSet('drift.bg', curBg); applyBackground(); refreshBgSel(); });
+      bgGrid.appendChild(sw);
+    });
+    bgSection.appendChild(bgGrid);
+    var up = document.createElement('label');
+    up.textContent = 'Upload image…';
+    up.style.cssText = 'display:inline-block;margin-top:8px;font-size:12px;color:var(--accent);cursor:pointer;';
+    var upInput = document.createElement('input');
+    upInput.type = 'file'; upInput.accept = 'image/*'; upInput.style.display = 'none';
+    upInput.addEventListener('change', function () {
+      var f = upInput.files && upInput.files[0]; if (!f) return;
+      var reader = new FileReader();
+      reader.onload = function () {
+        try { lsSet('drift.bgCustom', String(reader.result)); curBg = 'custom'; lsSet('drift.bg', curBg); applyBackground(); refreshBgSel(); } catch (e) {}
+      };
+      reader.readAsDataURL(f);
+    });
+    up.appendChild(upInput);
+    bgSection.appendChild(up);
+    settingsPanel.appendChild(bgSection);
+    refreshBgSel();
+
+    /* ── Search engine ── */
+    var seSection = document.createElement('div');
+    var seLabel = document.createElement('div'); seLabel.className = 'sp-label'; seLabel.textContent = 'Search engine';
+    seSection.appendChild(seLabel);
+    var seSel = document.createElement('select');
+    seSel.style.cssText = 'width:100%;padding:6px 8px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text-1);font:inherit;';
+    var curSe = lsGet('drift.se', 'google');
+    Object.keys(SEARCH_ENGINES).forEach(function (id) {
+      var opt = document.createElement('option'); opt.value = id; opt.textContent = ENGINE_LABELS[id] || id;
+      if (id === curSe) opt.selected = true;
+      seSel.appendChild(opt);
+    });
+    seSel.addEventListener('change', function () { lsSet('drift.se', seSel.value); });
+    seSection.appendChild(seSel);
+    settingsPanel.appendChild(seSection);
+
+    /* ── Widgets ── */
+    var wSection = document.createElement('div');
+    var wLabel = document.createElement('div'); wLabel.className = 'sp-label'; wLabel.textContent = 'Widgets';
+    wSection.appendChild(wLabel);
+    function toggleRow(labelText, key, onChange) {
+      var row = document.createElement('label');
+      row.style.cssText = 'display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:13px;color:var(--text-1);margin:4px 0;cursor:pointer;';
+      var span = document.createElement('span'); span.textContent = labelText;
+      var cb = document.createElement('input'); cb.type = 'checkbox'; cb.checked = lsGet(key, '0') === '1';
+      cb.addEventListener('change', function () { lsSet(key, cb.checked ? '1' : '0'); if (onChange) onChange(); });
+      row.append(span, cb);
+      return row;
+    }
+    wSection.appendChild(toggleRow('Weather', 'drift.weather', renderWidgets));
+    var locInput = document.createElement('input');
+    locInput.type = 'text'; locInput.placeholder = 'Weather location (e.g. London)';
+    locInput.value = lsGet('drift.wloc', '');
+    locInput.style.cssText = 'width:100%;padding:6px 8px;margin:4px 0;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text-1);font:inherit;';
+    locInput.addEventListener('change', function () { lsSet('drift.wloc', locInput.value.trim()); renderWidgets(); });
+    wSection.appendChild(locInput);
+    wSection.appendChild(toggleRow('Reminders', 'drift.reminders_on', renderWidgets));
+    settingsPanel.appendChild(wSection);
+
+    settingsPanel.style.maxHeight = '82vh';
+    settingsPanel.style.overflowY = 'auto';
   }
 
   buildSettings();

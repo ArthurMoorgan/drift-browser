@@ -88,15 +88,27 @@ The UI is split across two delivery mechanisms:
 
 ### Chrome theme engine (`drift-theme-chrome.js`)
 
-The browser chrome is no longer a single static cream skin — it is a **runtime theme system** driven by `drift.*` prefs:
+There are no fixed named themes. Instead the **entire chrome palette is derived from a single background colour** (Zen/Vivaldi-style), driven by `drift.*` prefs:
 
-- **7 themes**: `light` · `sepia` · `arctic` · `dark` · `midnight` · `slate` · `noir` (pref `drift.theme`)
-- **14 accent presets** with light/dark variants, or a custom hex (`drift.accent` / `drift.accentMode` / `drift.accentCustom`)
-- **Live glass translucency + frost blur** (`drift.glass` 20–95, `drift.blur` px)
-- **Modes**: `normal` · `lite` (opaque, no animation) · `minimal` (`drift.mode`)
-- **Layout flags**: vertical tabs (`drift.vtabs`, mirrors into native `sidebar.verticalTabs`), compact, centered URL, acrylic
+- **Background**: solid colour, gradient (two colours + angle), or your own image (`drift.bg.type` = `solid`/`gradient`/`image`, `drift.bg.color`, `drift.bg.color2`, `drift.bg.angle`, `drift.bg.image`)
+- **Derived palette**: `derivePalette()` picks a light or dark scheme from the base colour's luminance and computes every surface/text/border token, so any colour stays readable
+- **Accent**: any colour via a colour wheel (`drift.accent`)
+- **Live glass translucency + frost blur** (`drift.glass` 20–100, `drift.blur` px)
+- **Density / layout**: `drift.compact` (→ native `browser.uidensity`), `drift.minimal`, vertical tabs (`drift.vtabs` → native `sidebar.verticalTabs`), centered URL, acrylic
 
-`drift-theme-chrome.js` is loaded by `browser.xhtml`, reads these prefs, and applies a `drift-theme` / `drift-mode` attribute plus inline CSS custom properties to the chrome root, re-applying live on any pref change. `drift-theme.css` then reacts via `:root[drift-theme="…"]` palette blocks. Native popups, menus, the downloads/library panels and the urlbar results are themed through the same palette so the whole UI follows the active theme.
+`drift-theme-chrome.js` (loaded by `browser.xhtml`) reads these prefs and sets the `--drift-*` custom properties + `--drift-toolbox-bg` inline on the chrome root, re-applying live on any change. Native popups, menus, the downloads/library panels and the urlbar results all read the same palette, so the whole UI follows the chosen colour.
+
+### Settings popup (`drift-settings.js`)
+
+Settings open as an **in-chrome popup overlay**, not `about:preferences`. Drift overrides `openPreferences`, so the Settings menu item and **Ctrl+,** open the Drift panel (an "Advanced…" button still reaches the full Firefox preferences). The panel has a **colour wheel** (canvas HSV) for background + accent, background-type and image picker, glass/blur/bar-height sliders, plus Layout (compact, minimal, vertical tabs, centered URL, split view), Browsing (bookmarks bar, force-dark, animations, tab unloading) and Privacy (GPC, clear-on-exit) sections — all bound to live prefs.
+
+### Split view (`drift-split.js`, experimental)
+
+`window.DriftSplit.toggle()` (from the Layout settings) tiles the current tab's browser next to one other tab side by side. It is opt-in and fully guarded, so it never affects normal browsing.
+
+### Ad blocking (uBlock Origin, built in)
+
+Drift bundles **uBlock Origin** so ad/tracker blocking works out of the box — no install step. The AMO-signed xpi ships under `distribution/extensions/` and Firefox auto-installs it on first run. It is wired via `src/browser/extensions/ublock-origin/moz.build`, which uses `FINAL_TARGET_FILES.distribution.extensions` with `DIST_SUBDIR = ""` so the xpi lands at the app root's `distribution/` (not under `browser/`). Because the extension is AMO-signed, signature verification stays **enabled**. The patch also adds an unconditional `@RESPATH@/distribution/extensions/*` line to `package-manifest.in` (Firefox's stock `distribution/*` line is gated to official Mozilla builds).
 
 ### Ad blocking (uBlock Origin, built in)
 

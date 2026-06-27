@@ -1,8 +1,8 @@
 diff --git a/browser/app/profile/firefox.js b/browser/app/profile/firefox.js
-index 2b852e0225..903461ddd7 100644
+index 2b852e0225..bb9117a48f 100644
 --- a/browser/app/profile/firefox.js
 +++ b/browser/app/profile/firefox.js
-@@ -3623,3 +3623,57 @@ pref("browser.contentsharing.enabled", false);
+@@ -3623,3 +3623,61 @@ pref("browser.contentsharing.enabled", false);
  
  // When enabled, Firefox ignores the distribution.ini file if global.id is MozillaOnline.
  pref("distribution.mozillaonline.ignore", true);
@@ -28,29 +28,33 @@ index 2b852e0225..903461ddd7 100644
 +pref("browser.newtabpage.activity-stream.telemetry", false);
 +pref("browser.newtabpage.activity-stream.feeds.snippets", false);
 +
-+// Drift theme engine (read by drift-theme-chrome.js, applied to the chrome root).
-+// theme: light | sepia | arctic | dark | midnight | slate | noir
-+pref("drift.theme", "light");
-+// accent: one of the 14 presets (terracotta sage ocean plum rose amber forest
-+// indigo crimson teal cocoa graphite sky fuchsia)
-+pref("drift.accent", "terracotta");
-+// accentMode: preset | custom
-+pref("drift.accentMode", "preset");
-+// accentCustom: a hex colour used when accentMode == custom
-+pref("drift.accentCustom", "");
++// Drift visual engine (read by drift-theme-chrome.js, applied to the chrome root).
++// The whole UI palette is derived from a single background colour, so there are
++// no longer fixed named themes — pick any colour, gradient, or image.
++// bg.type: solid | gradient | image
++pref("drift.bg.type", "gradient");
++// bg.color: the dominant background colour (hex). The UI palette (surfaces, text,
++// borders) is derived from this, picking a light or dark scheme by its luminance.
++pref("drift.bg.color", "#f4ead0");
++// bg.color2 / bg.angle: second stop + angle for gradient backgrounds.
++pref("drift.bg.color2", "#e3d2ac");
++pref("drift.bg.angle", 155);
++// bg.image: a file:// or data: URL used when bg.type == image.
++pref("drift.bg.image", "");
++// accent: accent colour (hex). UI derives deep / soft / ring variants.
++pref("drift.accent", "#c2703d");
 +// glass: chrome translucency 20..95 (percent of surface over transparent)
 +pref("drift.glass", 45);
 +// blur: frost backdrop-filter radius in px (0 disables frost)
 +pref("drift.blur", 20);
-+// mode: normal | lite | minimal
-+pref("drift.mode", "normal");
-+// titlebarH: tab/title bar height override in px (0 = theme default)
-+pref("drift.titlebarH", 0);
-+// Layout flags
++// Density / layout flags
++pref("drift.compact", false);   // compact density (maps to browser.uidensity)
++pref("drift.minimal", false);   // thin, decluttered chrome
 +pref("drift.vtabs", false);
-+pref("drift.compact", false);
 +pref("drift.centerUrl", false);
 +pref("drift.acrylic", false);
++// titlebarH: tab/title bar height override in px (0 = default)
++pref("drift.titlebarH", 0);
 +
 +// Drift: enable the modern (revamped) sidebar on the release channel so vertical
 +// tabs are available. The sidebar stays hidden by default (sidebar.visibility);
@@ -61,26 +65,30 @@ index 2b852e0225..903461ddd7 100644
 +// distribution/extensions and is auto-installed per profile on first run.
 +// Signature verification is intentionally left ENABLED (the xpi is signed).
 diff --git a/browser/base/content/browser.xhtml b/browser/base/content/browser.xhtml
-index d8ed09dca6..afc605085d 100644
+index d8ed09dca6..a4e8db220c 100644
 --- a/browser/base/content/browser.xhtml
 +++ b/browser/base/content/browser.xhtml
-@@ -101,6 +101,7 @@
+@@ -101,6 +101,9 @@
    <title data-l10n-id="browser-main-window-default-title"></title>
  
    <script src="chrome://browser/content/global-scripts.js"></script>
 +  <script src="chrome://browser/content/drift-theme-chrome.js"></script>
++  <script src="chrome://browser/content/drift-settings.js"></script>
++  <script src="chrome://browser/content/drift-split.js"></script>
    <script src="chrome://browser/content/browser-main.js"></script>
  </head>
  <html:body xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
 diff --git a/browser/base/jar.mn b/browser/base/jar.mn
-index dd0f873535..13c6f10f8c 100644
+index dd0f873535..62d4d6709d 100644
 --- a/browser/base/jar.mn
 +++ b/browser/base/jar.mn
-@@ -52,6 +52,7 @@ browser.jar:
+@@ -52,6 +52,9 @@ browser.jar:
          content/browser/browser-gestureSupport.js           (content/browser-gestureSupport.js)
          content/browser/browser-init.js                     (content/browser-init.js)
          content/browser/browser-main.js                     (content/browser-main.js)
 +        content/browser/drift-theme-chrome.js               (content/drift-theme-chrome.js)
++        content/browser/drift-settings.js                   (content/drift-settings.js)
++        content/browser/drift-split.js                      (content/drift-split.js)
          content/browser/browser-menubar.js                  (content/browser-menubar.js)
          content/browser/browser-pageActions.js              (content/browser-pageActions.js)
          content/browser/browser-pagestyle.js                (content/browser-pagestyle.js)
@@ -557,16 +565,22 @@ index 2287d8f9fd..18d641c9d8 100644
  :root,
  body {
 diff --git a/browser/themes/shared/jar.inc.mn b/browser/themes/shared/jar.inc.mn
-index e3bdc11e44..0b22818ecf 100644
+index e3bdc11e44..ed5f316db2 100644
 --- a/browser/themes/shared/jar.inc.mn
 +++ b/browser/themes/shared/jar.inc.mn
-@@ -19,6 +19,9 @@
+@@ -19,6 +19,15 @@
    skin/classic/browser/blockedSite.css                         (../shared/blockedSite.css)
    skin/classic/browser/browser-colors.css                      (../shared/browser-colors.css)
    skin/classic/browser/browser-shared.css                      (../shared/browser-shared.css)
 +  skin/classic/browser/drift-theme.css                         (../shared/drift-theme.css)
 +  skin/classic/browser/fonts/drift/inter.woff2                 (../../fonts/drift/inter.woff2)
 +  skin/classic/browser/fonts/drift/fraunces.woff2              (../../fonts/drift/fraunces.woff2)
++  skin/classic/browser/drift-backgrounds/cream.svg             (../shared/drift-backgrounds/cream.svg)
++  skin/classic/browser/drift-backgrounds/terracotta.svg        (../shared/drift-backgrounds/terracotta.svg)
++  skin/classic/browser/drift-backgrounds/sage.svg              (../shared/drift-backgrounds/sage.svg)
++  skin/classic/browser/drift-backgrounds/ocean.svg             (../shared/drift-backgrounds/ocean.svg)
++  skin/classic/browser/drift-backgrounds/plum.svg              (../shared/drift-backgrounds/plum.svg)
++  skin/classic/browser/drift-backgrounds/dusk.svg              (../shared/drift-backgrounds/dusk.svg)
    skin/classic/browser/formautofill-notification.css           (../shared/formautofill-notification.css)
    skin/classic/browser/identity-credential-notification.css    (../shared/identity-credential-notification.css)
    skin/classic/browser/menupanel.css                           (../shared/menupanel.css)
