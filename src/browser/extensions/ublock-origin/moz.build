@@ -1,0 +1,11 @@
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+# Drift: bundle uBlock Origin as a distribution extension. The signed xpi is
+# copied into dist/bin/distribution/extensions and auto-installed on first run.
+# Override DIST_SUBDIR (the browser subtree sets it to "browser") so the file
+# installs to the app root's distribution/ where Firefox looks for it, not under
+# dist/bin/browser/.
+DIST_SUBDIR = ""
+FINAL_TARGET_FILES.distribution.extensions += ["uBlock0@raymondhill.net.xpi"]

@@ -1,8 +1,8 @@
 diff --git a/browser/app/profile/firefox.js b/browser/app/profile/firefox.js
-index 2b852e0225..43f7124b04 100644
+index 2b852e0225..903461ddd7 100644
 --- a/browser/app/profile/firefox.js
 +++ b/browser/app/profile/firefox.js
-@@ -3623,3 +3623,53 @@ pref("browser.contentsharing.enabled", false);
+@@ -3623,3 +3623,57 @@ pref("browser.contentsharing.enabled", false);
  
  // When enabled, Firefox ignores the distribution.ini file if global.id is MozillaOnline.
  pref("distribution.mozillaonline.ignore", true);
@@ -56,6 +56,10 @@ index 2b852e0225..43f7124b04 100644
 +// tabs are available. The sidebar stays hidden by default (sidebar.visibility);
 +// drift.vtabs mirrors into sidebar.verticalTabs via drift-theme-chrome.js.
 +pref("sidebar.revamp", true);
++
++// Drift: bundle uBlock Origin. The AMO-signed xpi ships under
++// distribution/extensions and is auto-installed per profile on first run.
++// Signature verification is intentionally left ENABLED (the xpi is signed).
 diff --git a/browser/base/content/browser.xhtml b/browser/base/content/browser.xhtml
 index d8ed09dca6..afc605085d 100644
 --- a/browser/base/content/browser.xhtml
@@ -96,6 +100,18 @@ index ccc3a1286f..afaf360d37 100644
 -152.0.2
 +1.0.0
 \ No newline at end of file
+diff --git a/browser/extensions/moz.build b/browser/extensions/moz.build
+index abe42759fa..d80a20ecc0 100644
+--- a/browser/extensions/moz.build
++++ b/browser/extensions/moz.build
+@@ -3,6 +3,7 @@
+ # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ 
+ DIRS += [
++    "ublock-origin",
+     "data-leak-blocker",
+     "formautofill",
+     "ipp-activator",
 diff --git a/browser/extensions/newtab/addon-jar.mn b/browser/extensions/newtab/addon-jar.mn
 index 31c583a8dc..5b6559e70b 100644
 --- a/browser/extensions/newtab/addon-jar.mn
@@ -503,6 +519,17 @@ index 6d609a777c..a9346ac404 100644
 +  <script src="resource://newtab/data/content/drift-newtab.js"></script>
 +</body>
  </html>
+diff --git a/browser/installer/package-manifest.in b/browser/installer/package-manifest.in
+index 83e52b260c..bb9e528e11 100644
+--- a/browser/installer/package-manifest.in
++++ b/browser/installer/package-manifest.in
+@@ -456,3 +456,6 @@ bin/libfreebl_64int_3.so
+ #if defined(BUILT_BY_MOZILLA)
+ @RESPATH@/distribution/*
+ #endif
++
++; Drift: bundled distribution extensions (uBlock Origin)
++@RESPATH@/distribution/extensions/*
 diff --git a/browser/moz.configure b/browser/moz.configure
 index 3ea3d88b93..1984e28404 100644
 --- a/browser/moz.configure

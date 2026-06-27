@@ -98,6 +98,10 @@ The browser chrome is no longer a single static cream skin — it is a **runtime
 
 `drift-theme-chrome.js` is loaded by `browser.xhtml`, reads these prefs, and applies a `drift-theme` / `drift-mode` attribute plus inline CSS custom properties to the chrome root, re-applying live on any pref change. `drift-theme.css` then reacts via `:root[drift-theme="…"]` palette blocks. Native popups, menus, the downloads/library panels and the urlbar results are themed through the same palette so the whole UI follows the active theme.
 
+### Ad blocking (uBlock Origin, built in)
+
+Drift bundles **uBlock Origin** so ad/tracker blocking works out of the box — no install step. The AMO-signed xpi ships under `distribution/extensions/` and Firefox auto-installs it on first run. It is wired via `src/browser/extensions/ublock-origin/moz.build`, which uses `FINAL_TARGET_FILES.distribution.extensions` with `DIST_SUBDIR = ""` so the xpi lands at the app root's `distribution/` (not under `browser/`). Because the extension is AMO-signed, signature verification stays **enabled**. The patch also adds an unconditional `@RESPATH@/distribution/extensions/*` line to `package-manifest.in` (Firefox's stock `distribution/*` line is gated to official Mozilla builds).
+
 ### `src/` layout (mirrors `engine/` tree)
 
 ```
@@ -107,6 +111,9 @@ src/
       drift-theme-chrome.js    ← theme engine: drift.* prefs → drift-theme attr + CSS vars (live)
     themes/shared/
       drift-theme.css          ← 7 theme palettes, accents, glass, lite/minimal, native-panel theming
+    extensions/ublock-origin/
+      moz.build                ← bundles uBlock Origin into distribution/extensions (DIST_SUBDIR="")
+      uBlock0@raymondhill.net.xpi  ← AMO-signed uBlock Origin 1.71.0
     extensions/newtab/
       data/content/
         drift-newtab.js        ← theme init, clock, search, dock, widgets, settings panel
