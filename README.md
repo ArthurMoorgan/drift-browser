@@ -2,6 +2,15 @@
 
 Drift is a custom Firefox-based browser built with [surfer](https://github.com/zen-browser/surfer), based on **Firefox 152.0.2**.
 
+## Screenshots
+
+| | |
+|---|---|
+| ![New Tab](screenshots/drift-home.png) | ![Settings](screenshots/drift-settings.png) |
+| *New Tab page with search and shortcuts* | *Settings — Account, sync, and Drift-specific options* |
+| ![Browsing](screenshots/drift-browsing.png) | ![About](screenshots/drift-about.png) |
+| *Browsing the web (example.com)* | *about:about — full list of internal pages* |
+
 ## Platform
 
 **Windows 64-bit** (x86_64)
