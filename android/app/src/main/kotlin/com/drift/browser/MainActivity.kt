@@ -209,7 +209,9 @@ class MainActivity : AppCompatActivity() {
         session.navigationDelegate = object : GeckoSession.NavigationDelegate {
             override fun onLocationChange(
                 s: GeckoSession,
-                url: String?
+                url: String?,
+                perms: List<GeckoSession.PermissionDelegate.ContentPermission>,
+                hasUserGesture: Boolean
             ) = withTab(s) { tab ->
                 tab.url = url ?: ""
                 if (tab == activeTab) runOnUiThread { updateUrlBar(tab.url) }
